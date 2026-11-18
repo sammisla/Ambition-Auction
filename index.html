@@ -101,6 +101,31 @@ td input,td select{border:1px solid var(--line);border-radius:8px;padding:7px;wi
 .tabs button{border:2px solid var(--maroon);background:#fff;color:var(--maroon);border-radius:999px;padding:7px 14px;font-weight:800}
 .tabs button.on{background:var(--maroon);color:#fff}
 .presenter .ctl{display:none!important}
+.sticky{position:sticky;bottom:0;z-index:6;background:var(--cream);box-shadow:0 -8px 16px rgba(140,29,44,.08);padding:12px 0 10px;margin-top:6px;border-top:1px solid var(--line)}
+.sticky .sum{display:flex;justify-content:space-between;font-weight:800;font-size:14px;color:var(--maroon);margin-bottom:8px}
+.board{margin:18px auto 6px;max-width:760px;text-align:left}
+.brow{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;margin-bottom:8px;background:#FBF3EC;border:2px solid transparent}
+.brow.lead{background:#FFF0E5;border-color:var(--orange)}
+.brow.won{background:#EAF3E4;border-color:var(--society)}
+.brow .pos{font-weight:900;color:var(--maroon);font-size:20px;text-align:center}
+.brow .tn{font-weight:900;font-size:clamp(16px,1.8vw,22px)}
+.brow .amt{font-weight:900;font-size:clamp(18px,2.2vw,28px)}
+.brow .bar{grid-column:2/4;height:8px;margin-top:2px}
+.badge{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:900;color:#fff;background:var(--orange);vertical-align:2px}
+.badge.won{background:var(--society)}
+.feed{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;margin:8px auto 0;max-width:820px}
+.feed .f{padding:6px 11px;border-radius:999px;background:#fff;border:1px solid var(--line);font-weight:800;font-size:14px}
+.feed .f.new{background:var(--maroon);color:#fff;border-color:var(--maroon);animation:pop .5s ease}
+.feed .arr{color:var(--muted);font-weight:900}
+@keyframes pop{0%{transform:scale(1.25)}100%{transform:scale(1)}}
+.assign{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.assign select,.assign input{border:1px solid var(--line);border-radius:10px;padding:9px;font-size:15px}
+.slide{background:#fff;border:1px solid var(--line);border-radius:22px;padding:34px 40px;min-height:68vh;display:flex;flex-direction:column;justify-content:center}
+.slide h1{font-size:clamp(28px,3.4vw,46px);color:var(--maroon);margin-bottom:6px}
+.slide .kick{color:var(--orange);font-weight:900;letter-spacing:1px;text-transform:uppercase;font-size:15px;margin-bottom:6px}
+.slide .lead{font-size:clamp(17px,1.7vw,22px);color:var(--muted);margin-bottom:18px}
+.slidenav{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+@media print{.top,.tabs,.slidenav,.ctl,.toast{display:none!important}body{background:#fff}.wrap{max-width:none;padding:0}.slide{min-height:auto;border:0;page-break-after:always;padding:18px}}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>window.backendReady=new Promise((res,rej)=>{window.__backend={res,rej}});</script>
@@ -126,7 +151,7 @@ if(!window.__MOCK_BACKEND)(async()=>{
     const app=initializeApp(FIREBASE_CONFIG);
     const cred=await au.signInAnonymously(au.getAuth(app));
     const uid=cred.user.uid;
-    const fdb=fs.getFirestore(app);
+    const fdb=fs.initializeFirestore(app,{ignoreUndefinedProperties:true});
     const mapErr=e=>({code:e&&e.code==='permission-denied'?'denied':(e&&e.code)||'unavailable',message:(e&&e.message)||'Unavailable'});
     const wrap=s=>({id:s.id,exists:s.exists(),data:()=>s.data()});
     const rethrow=e=>{throw mapErr(e)};
@@ -167,23 +192,23 @@ const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>
 const SIZES=['Safe','Stretch','Bold'], WHOM=['Self','People','Bank','Society'];
 const WCOL={Self:'var(--self)',People:'var(--people)',Bank:'var(--bank)',Society:'var(--society)'};
 const SCOL={Safe:'var(--safe)',Stretch:'var(--stretch)',Bold:'var(--bold)'};
-const PHASES=[['lobby','Lobby'],['individual','Individual'],['team','Team'],['auction','Auction'],['debrief','Debrief'],['reports','Reports']];
+const PHASES=[['lobby','Lobby'],['individual','Individual'],['auction','Auction'],['debrief','Debrief'],['reports','Reports']];
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.remove('hide');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.add('hide'),2400)}
 const pct=(a,b)=>b?Math.round(a*100/b):0;
 
 const DEFAULT_LOTS=[
- ["Meet my zone's targets this year","Safe","Self",10000],
- ["5 of my branch heads become Zonal Heads","Bold","People",10000],
- ["My zone ranks in the national top 3","Stretch","Self",20000],
- ["Every RM in my zone says \"my manager grew me\"","Stretch","People",10000],
- ["Become Head of Retail","Bold","Self",20000],
- ["My zone's model is adopted bank-wide","Bold","Bank",20000],
- ["Rank No. 1 nationally","Bold","Self",10000],
- ["A district where every family banks with dignity","Bold","Society",10000],
- ["A CEO's handwritten note of praise","Safe","Self",10000],
- ["My successor is ready, two years early","Stretch","People",10000],
- ["Customers in my zone trust ICICI first","Stretch","Bank",10000],
- ["1,000 first-generation entrepreneurs funded","Bold","Society",10000]
+ ["Top rating and a full bonus this year","Safe","Self",10000],
+ ["5 of my Regional Heads become Zonal Heads","Bold","People",10000],
+ ["My zone is felicitated on stage as India's Top 3","Stretch","Self",20000],
+ ["Every RM in my zone says, \"You made my career\"","Stretch","People",10000],
+ ["Fast-track promotion to State Head","Bold","Self",20000],
+ ["My zone's model becomes the playbook for every zone","Bold","Bank",20000],
+ ["Rank No. 1 in India, announced by the MD on stage","Bold","Self",10000],
+ ["One district where every family banks with dignity","Bold","Society",10000],
+ ["A seat at a global leadership programme abroad","Safe","Self",10000],
+ ["My successor is ready two years early","Stretch","People",10000],
+ ["ICICI becomes the first choice of every customer in my zone","Stretch","Bank",10000],
+ ["1,000 first-generation entrepreneurs funded and thriving","Bold","Society",10000]
 ];
 function defaultConfig(){
   return {session:'s'+Date.now(),phase:'lobby',
@@ -272,6 +297,8 @@ const lots=()=>S.cfg.lots;
 const lotById=id=>lots().find(l=>l.id===id);
 const teamById=id=>S.cfg.teams.find(t=>t.id===id);
 const me=()=>{const d=S.meDoc;return d&&S.cfg&&d.session===S.cfg.session?d:null};
+function teamStandings(lotId){const best={};S.bids.filter(b=>b.lotId===lotId).forEach(b=>{const x=best[b.teamId];if(!x||b.amount>x.amount||(b.amount===x.amount&&b.t<x.t))best[b.teamId]=b});return Object.values(best).sort((a,b)=>b.amount-a.amount||a.t-b.t)}
+function bidFeed(lotId){return S.bids.filter(b=>b.lotId===lotId).sort((a,b)=>a.t-b.t)}
 function lotBids(lotId){return S.bids.filter(b=>b.lotId===lotId).sort((a,b)=>b.amount-a.amount||a.t-b.t)}
 function highBid(lotId){return lotBids(lotId)[0]||null}
 function teamSpent(tid){let s=0;Object.entries(S.cfg.sold||{}).forEach(([lid,x])=>{if(x.team===tid)s+=x.price;if(x.runner===tid)s+=x.runnerPrice||0});return s}
@@ -280,6 +307,10 @@ function teamWon(tid){return Object.entries(S.cfg.sold||{}).filter(([l,x])=>x.te
 const teamMembers=tid=>Object.entries(S.players).filter(([u,p])=>p.team===tid);
 function nextBidAmount(lot){const h=highBid(lot.id);return h?h.amount+S.cfg.inc:lot.open}
 const curLot=()=>lots()[S.cfg.current]||null;
+const needLeader=()=>S.cfg.teams.filter(t=>!leaderOf(t.id)&&teamMembers(t.id).length);
+const leaderOf=tid=>((S.cfg&&S.cfg.leaders)||{})[tid]||'';
+function setLeader(tid,uid){const leaders=Object.assign({},S.cfg.leaders||{});if(uid)leaders[tid]=uid;else delete leaders[tid];const leaderNames=Object.assign({},S.cfg.leaderNames||{});if(uid)leaderNames[tid]=(S.players[uid]||{}).name||'';else delete leaderNames[tid];writeCfg({leaders,leaderNames})}
+function leaderPicker(t){const mem=teamMembers(t.id),cur=leaderOf(t.id);return `<div class="field ctl" style="margin:10px 0 0"><label>Group leader (holds the paddle)</label><select onchange="setLeader('${t.id}',this.value)"><option value="">Choose a leader</option>${mem.map(([u,p])=>`<option value="${u}" ${cur===u?'selected':''}>${esc(p.name)}</option>`).join('')}</select></div>`}
 
 // ---------- facilitator PIN ----------
 function pinView(){
@@ -326,7 +357,7 @@ function renderPlayer(){
   switch(c.phase){
     case 'lobby': return app(`<div class="card center"><h2>You're in, ${esc(p.name)}!</h2><p>Your group: <b>${esc(teamById(p.team)?.name||'—')}</b></p><p class="muted">The auction begins soon. Keep this screen open.</p><button class="btn sec sm" onclick="S.editProfile=true;render(true)">Change name or group</button></div>`);
     case 'individual': return app(individualView());
-    case 'team': return app(teamView());
+    case 'team': return app(auctionPhone());
     case 'auction': return app(auctionPhone());
     case 'debrief': return app(debriefPhone());
     case 'reports': loadAllPlayers(); return app(individualReport(S.uid,true));
@@ -354,6 +385,8 @@ function savePlayer(extra){const p=Object.assign({},me(),{rank:S.draft.rank,allo
 const sumObj=o=>Object.values(o||{}).reduce((a,b)=>a+(+b||0),0);
 function individualView(){
   const d=myDraft(), c=S.cfg, used=sumObj(d.alloc), left=c.indBudget-used, p=me();
+  if(p.submitted&&!S.editSheet) return `<div class="card center"><div class="big" style="font-size:64px">✓</div><h2>Private sheet submitted</h2><p class="muted">Thank you. Keep this screen open; the auction begins when your facilitator is ready.</p><button class="btn sec" onclick="S.editSheet=true;render(true)">Review or change my sheet</button></div>`+mySheet(p);
+  const ready=d.rank.length&&used>0;
   return `<div class="budgetbar"><span>Your private purse</span><b>${fmt(left)} left</b></div>
   <div class="card"><h2>Step 1 · Rank the ambitions</h2><p class="muted">Tap the ambitions in the order you want them most. Tap again to remove.</p>
   ${lots().map(l=>{const r=d.rank.indexOf(l.id);return `<div class="lot" onclick="toggleRank('${l.id}')"><div class="num ${r>=0?'ranked':''}">${r>=0?r+1:''}</div><div class="txt">${esc(l.text)}<div class="meta">Lot ${lots().indexOf(l)+1}</div></div></div>`}).join('')}
@@ -361,12 +394,12 @@ function individualView(){
   <div class="card"><h2>Step 2 · Spend your ${fmt(c.indBudget)}</h2><p class="muted">Place money on the ambitions you truly want, in steps of ${fmt(c.inc)}. This sheet stays private.</p>
   ${lots().map(l=>`<div class="lot"><div class="txt">${esc(l.text)}</div><div class="stepper"><button onclick="alloc('${l.id}',-1)">−</button><div class="val">${fmt(d.alloc[l.id]||0)}</div><button onclick="alloc('${l.id}',1)" ${left<c.inc?'disabled':''}>+</button></div></div>`).join('')}
   </div>
-  <button class="btn raise" onclick="submitInd()">${p.submitted?'Update my private sheet':'Submit my private sheet'}</button>
-  ${p.submitted?'<p class="center muted">Submitted. You can keep adjusting until your facilitator moves on.</p>':''}`;
+  <div class="sticky"><div class="sum"><span>Ranked: ${d.rank.length} of ${lots().length}</span><span>Spent: ${fmt(used)} of ${fmt(c.indBudget)}</span></div>
+  <button class="btn raise" ${ready?'':'style="opacity:.55"'} onclick="submitInd()">${p.submitted?'Save changes':'Submit my private sheet'}</button></div>`;
 }
 function toggleRank(id){const d=myDraft();const i=d.rank.indexOf(id);if(i>=0)d.rank.splice(i,1);else d.rank.push(id);savePlayer();render(true)}
 function alloc(id,dir){const d=myDraft(),c=S.cfg;const v=(d.alloc[id]||0)+dir*c.inc;if(v<0)return;if(dir>0&&sumObj(d.alloc)+c.inc>c.indBudget)return toast('Your purse is fully spent');if(v===0)delete d.alloc[id];else d.alloc[id]=v;savePlayer();render(true)}
-function submitInd(){const d=myDraft();if(!d.rank.length)return toast('Rank at least one ambition');if(!sumObj(d.alloc))return toast('Place your money on at least one ambition');savePlayer({submitted:true});render(true);toast('Private sheet saved')}
+function submitInd(){const d=myDraft();if(!d.rank.length)return toast('Rank at least one ambition');if(!sumObj(d.alloc))return toast('Place your money on at least one ambition');savePlayer({submitted:true});S.editSheet=false;window.scrollTo(0,0);render(true);toast('Private sheet submitted')}
 
 function teamPlan(tid){
   const saved=S.teams[tid]||{teamId:tid,session:S.cfg.session,rank:[],maxBid:{},bidder:''};
@@ -389,28 +422,51 @@ function tMax(id,dir){const t=S.teamDraft,c=S.cfg;const v=(t.maxBid[id]||0)+dir*
 
 function auctionPhone(){
   const c=S.cfg,p=me(),l=curLot(),tid=p.team,left=teamLeft(tid);
-  if(!l) return `<div class="card center"><h2>Auction complete</h2></div>`;
-  const h=highBid(l.id),next=nextBidAmount(l),plan=S.teams[tid]||{},bidder=plan.bidder;
-  const iAmBidder=!bidder||bidder===S.uid; const leading=h&&h.teamId===tid;
+  const leader=leaderOf(tid), iAmLeader=leader===S.uid, leaderName=(S.players[leader]||{}).name||(c.leaderNames||{})[tid]||'';
+  const pri=priorityPanel(tid,iAmLeader,leaderName);
+  if(!l||c.phase!=='auction') return `<div class="card center"><h2>${l?'The auction opens shortly':'Auction complete'}</h2></div>`+pri;
+  const h=highBid(l.id),next=nextBidAmount(l);
+  const leading=h&&h.teamId===tid;
   const open=c.lotState==='open'||c.lotState==='once'||c.lotState==='twice';
-  const maxPlan=(plan.maxBid||{})[l.id]||0;
   let action='';
   if(c.sold&&c.sold[l.id]) action=`<div class="banner sold">${c.sold[l.id].team?'Sold to '+esc(teamById(c.sold[l.id].team)?.name)+' for '+fmt(c.sold[l.id].price):'Unclaimed'}</div>`;
   else if(!open) action=`<p class="muted">The auctioneer will open this lot shortly.</p>`;
   else if(leading) action=`<div class="banner sold">Your group holds the top bid</div>`;
-  else if(!iAmBidder) action=`<p class="muted">${esc(S.players[bidder]?.name||'Your bidder')} holds your group's paddle.</p>`;
-  else action=`<button class="btn raise" ${next>left?'disabled':''} onclick="placeBid()">Raise paddle · ${fmt(next)}</button>${next>left?'<p class="muted">This bid is beyond your remaining purse.</p>':''}${maxPlan?`<p class="muted">Your group's planned maximum: ${fmt(maxPlan)}</p>`:''}`;
+  else if(!leader) action=`<p class="muted">Your facilitator is appointing your group leader.</p>`;
+  else if(!iAmLeader) action=`<p class="muted"><b>${esc(leaderName||'Your leader')}</b> holds your group's paddle.</p>`;
+  else action=`<button class="btn raise" ${next>left?'disabled':''} onclick="placeBid()">Raise paddle · ${fmt(next)}</button>${next>left?'<p class="muted">This bid is beyond your remaining purse.</p>':''}`;
+  const myRank=((S.teams[tid]||{}).rank||[]).indexOf(l.id);
   return `<div class="budgetbar"><span>${esc(teamById(tid)?.name)} remaining</span><b>${fmt(left)}</b></div>
   <div class="stage"><div class="lotno">Lot ${c.current+1}</div><div class="amb" style="font-size:28px">${esc(l.text)}</div>
+  ${myRank>=0?`<div class="pill" style="background:var(--orange)">Your group's priority #${myRank+1}</div>`:''}
   ${l.twist&&c.twistAnnounced?`<div class="banner twist" style="font-size:15px">Twist: the top two bidders both pay</div>`:''}
   <div class="muted" style="margin-top:12px">Current bid</div><div class="bid" style="font-size:52px">${h?fmt(h.amount):fmt(l.open)}</div>
   <div class="who" style="font-size:20px">${h?esc(teamById(h.teamId)?.name):'Opening bid'}</div>
   ${c.lotState==='once'?'<div class="banner">Going once…</div>':''}${c.lotState==='twice'?'<div class="banner">Going twice…</div>':''}
-  <div style="margin-top:18px">${action}</div></div>`;
+  <div style="margin-top:18px">${action}</div>${bidBoard(l,true)}</div>`+pri;
+}
+function priorityPanel(tid,iAmLeader,leaderName){
+  const rank=iAmLeader?teamPlan(tid).rank:((S.teams[tid]||{}).rank||[]);
+  if(iAmLeader) return `<div class="card"><h2>Set your group's priorities</h2><p class="muted">You are the group leader. Tap the ambitions in priority order; your whole group sees this list live. Tap again to remove.</p>
+  ${lots().map(l=>{const r=rank.indexOf(l.id);return `<div class="lot" onclick="tRank('${l.id}')"><div class="num ${r>=0?'ranked':''}">${r>=0?r+1:''}</div><div class="txt">${esc(l.text)}</div></div>`}).join('')}</div>`;
+  return `<div class="card"><h3>Your group's priorities</h3><p class="muted">${leaderName?'Set by '+esc(leaderName)+', your group leader':'Your group leader sets these'}</p>
+  ${rank.length?rank.map((id,i)=>`<div class="lot"><div class="num ranked">${i+1}</div><div class="txt">${esc(lotById(id)?.text||'')}</div></div>`).join(''):'<p class="muted">Priorities appear here as your leader sets them.</p>'}</div>`;
+}
+function bidBoard(l,compact){
+  const c=S.cfg,st=teamStandings(l.id),sold=c.sold&&c.sold[l.id],top=st[0],max=top?top.amount:1;
+  const winner=sold&&sold.team;
+  if(!st.length&&!winner) return `<div class="board"><p class="muted center">${['open','once','twice'].includes(c.lotState)?'Bidding is open. Waiting for the first paddle…':'Bids from each group appear here, live.'}</p></div>`;
+  const rows=st.map((b,i)=>{const isWin=winner===b.teamId,isLead=!winner&&i===0;const paid=sold&&sold.runner===b.teamId?` <span class="badge" style="background:#222">Also pays</span>`:'';
+    return `<div class="brow ${isWin?'won':isLead?'lead':''}"><div class="pos">${i+1}</div><div class="tn">${esc(teamById(b.teamId)?.name||'')}${isWin?'<span class="badge won">WON</span>':isLead?'<span class="badge">Leading</span>':''}${paid}</div><div class="amt">${fmt(b.amount)}</div><div class="bar"><i style="width:${pct(b.amount,max)}%"></i></div></div>`}).join('');
+  if(winner&&!st.find(b=>b.teamId===winner)) return `<div class="board">${rows}<div class="brow won"><div class="pos">★</div><div class="tn">${esc(teamById(winner)?.name)}<span class="badge won">WON</span></div><div class="amt">${fmt(sold.price)}</div></div></div>`;
+  const feed=bidFeed(l.id);
+  const fh=compact?'':`<div class="muted center" style="margin-top:10px;font-weight:700">Bid trail</div><div class="feed">${feed.map((b,i)=>`${i?'<span class="arr">→</span>':''}<span class="f ${i===feed.length-1&&!winner?'new':''}">${esc(teamById(b.teamId)?.name||'')} ${fmt(b.amount)}</span>`).join('')}</div>`;
+  return `<div class="board">${rows}</div>${fh}`;
 }
 let bidLock=false;
 async function placeBid(){
   if(bidLock)return; const l=curLot(),p=me(),c=S.cfg; if(!l)return;
+  if(leaderOf(p.team)!==S.uid)return toast('Your group leader holds the paddle');
   const amt=nextBidAmount(l); if(amt>teamLeft(p.team))return toast('Beyond your purse');
   bidLock=true;
   try{await S.db.collection('bids').add({session:c.session,lotId:l.id,teamId:p.team,amount:amt,uid:S.uid,t:Date.now()});toast('Bid placed: '+fmt(amt))}
@@ -464,7 +520,7 @@ function renderHost(){
   app(v);
   if(c.phase==='lobby') drawQR();
 }
-function setPhase(k){const patch={phase:k};if(k==='auction'&&!c_started())patch.lotState='waiting';writeCfg(patch)}
+function setPhase(k){const patch={phase:k};if(k==='auction'){if(!c_started()){patch.lotState='waiting';patch.current=0}else if(!S.cfg.lotState)patch.lotState='waiting'}writeCfg(patch)}
 function c_started(){return Object.keys(S.cfg.sold||{}).length||S.bids.length}
 function teamsBoard(fn){return `<div class="grid3">${S.cfg.teams.map(t=>`<div class="card"><h3>${esc(t.name)}</h3>${fn(t)}</div>`).join('')}</div>`}
 function hostLobby(){
@@ -475,7 +531,7 @@ function hostLobby(){
   <button class="btn sec" style="margin-top:8px" onclick="S.confirmReset=true;render(true)">Start a fresh game</button>
   ${S.confirmReset?`<div class="note" style="margin-top:10px">A fresh game clears every sheet, plan and bid, and keeps your lots and groups. <div class="row" style="margin-top:8px"><button class="btn sm dark" onclick="resetGame()">Yes, start fresh</button><button class="btn sm sec" onclick="S.confirmReset=false;render(true)">Keep this game</button></div></div>`:''}</div></div>
   ${S.editLots?setupEditor():''}
-  ${teamsBoard(t=>teamMembers(t.id).map(([u,p])=>`<div class="member"><span>${esc(p.name)}</span></div>`).join('')||'<p class="muted">Waiting for members</p>')}`;
+  ${teamsBoard(t=>(teamMembers(t.id).map(([u,p])=>`<div class="member"><span>${esc(p.name)}${leaderOf(t.id)===u?' ★ Leader':''}</span></div>`).join('')||'<p class="muted">Waiting for members</p>')+(teamMembers(t.id).length?leaderPicker(t):''))}`;
 }
 function resetGame(){S.confirmReset=false;const c=Object.assign({},S.cfg,{session:'s'+Date.now(),phase:'lobby',current:0,lotState:'waiting',twistAnnounced:false,sold:{},revealWhom:false,debriefTab:'size'});S.cfg=c;saveDoc('config/game',c);resubscribe();render(true);toast('Fresh game ready')}
 function setupEditor(){
@@ -502,7 +558,7 @@ function saveSetup(){const e=S.editLots;if(!e.lots.length)return toast('Add at l
 function hostIndividual(){
   const ps=Object.values(S.players),done=ps.filter(p=>p.submitted).length;
   return `<div class="card center"><h2>Step 1 · Your private sheet</h2><p style="font-size:20px">Alone and in silence, rank the ambitions and spend your ${fmt(S.cfg.indBudget)}.</p><div class="big">${done} / ${ps.length}</div><div class="muted">private sheets submitted</div></div>
-  ${teamsBoard(t=>teamMembers(t.id).map(([u,p])=>`<div class="member"><span>${esc(p.name)}</span><span>${p.submitted?'✓ Ready':'Planning'}</span></div>`).join('')||'<p class="muted">Members appear here.</p>')}`;
+  ${teamsBoard(t=>(teamMembers(t.id).map(([u,p])=>`<div class="member"><span>${esc(p.name)}${leaderOf(t.id)===u?' ★':''}</span><span>${p.submitted?'✓ Ready':'Planning'}</span></div>`).join('')||'<p class="muted">Members appear here.</p>')+(teamMembers(t.id).length?leaderPicker(t):''))}`;
 }
 function hostTeam(){
   return `<div class="card center"><h2>Step 2 · Plan as a zone</h2><p style="font-size:20px">Pool your ${fmt(S.cfg.teamBudget)}, rank the ambitions together, set maximum bids and choose one bidder.</p></div>
@@ -511,28 +567,35 @@ function hostTeam(){
 function hostAuction(){
   const c=S.cfg,l=curLot();
   if(!l) return `<div class="card center"><h2>All lots auctioned</h2><button class="btn" onclick="setPhase('debrief')">Open the debrief</button></div>`;
-  const h=highBid(l.id),sold=c.sold&&c.sold[l.id],list=lotBids(l.id);
-  let banner='';
-  if(sold) banner=sold.team?`<div class="banner sold">Sold to ${esc(teamById(sold.team)?.name)} · ${fmt(sold.price)}</div>${sold.runner?`<div class="banner twist">${esc(teamById(sold.runner)?.name)} also pays ${fmt(sold.runnerPrice)}</div>`:''}`:`<div class="banner">Unclaimed</div>`;
-  else if(c.lotState==='once') banner='<div class="banner">Going once…</div>';
-  else if(c.lotState==='twice') banner='<div class="banner">Going twice…</div>';
-  else if(c.lotState==='waiting') banner='<div class="banner" style="background:#999">About to open</div>';
+  const h=highBid(l.id),sold=c.sold&&c.sold[l.id];
   const open=['open','once','twice'].includes(c.lotState)&&!sold;
+  let status='';
+  if(sold) status=sold.team?`<div class="banner sold">Won by ${esc(teamById(sold.team)?.name)} · ${fmt(sold.price)}</div>${sold.runner?`<div class="banner twist">${esc(teamById(sold.runner)?.name)} also pays ${fmt(sold.runnerPrice)}</div>`:''}`:`<div class="banner">Unclaimed</div>`;
+  else if(c.lotState==='once') status='<div class="banner">Going once…</div>';
+  else if(c.lotState==='twice') status='<div class="banner">Going twice…</div>';
+  else if(c.lotState==='waiting') status=`<div><button class="btn" style="margin-top:12px;font-size:22px;padding:16px 34px" onclick="writeCfg({lotState:'open'})">Open bidding</button></div>`;
+  if(!S.asg||S.asg.lot!==l.id||(!S.asg.touched)){S.asg={lot:l.id,team:h?h.teamId:(c.teams[0]||{}).id,amt:h?h.amount:l.open,touched:false}}
+  const assign=sold?'':`<div class="assign"><b>Assign this lot to</b>
+    <select onchange="S.asg.team=this.value;S.asg.touched=true;const b=teamStandings(curLot().id).find(x=>x.teamId===this.value);if(b){S.asg.amt=b.amount;}render(true)">${c.teams.map(t=>`<option value="${t.id}" ${S.asg.team===t.id?'selected':''}>${esc(t.name)}</option>`).join('')}</select>
+    <span>at ₹</span><input type="number" step="${c.inc}" min="0" value="${S.asg.amt}" style="width:130px" oninput="S.asg.amt=+this.value||0;S.asg.touched=true">
+    <button class="btn dark sm" onclick="assignLot()">Assign</button></div>`;
   return `<div class="grid2" style="grid-template-columns:2fr 1fr">
   <div><div class="stage"><div class="lotno">Lot ${c.current+1} of ${lots().length}</div><div class="amb">${esc(l.text)}</div>
   ${l.twist&&c.twistAnnounced?'<div class="banner twist">Twist lot: the top two bidders both pay</div>':''}
-  <div class="muted" style="margin-top:16px">${h?'Current bid':'Opening bid'}</div><div class="bid">${fmt(h?h.amount:l.open)}</div><div class="who">${h?esc(teamById(h.teamId)?.name):'Who will start?'}</div>${banner}</div>
-  <div class="card ctl" style="margin-top:14px"><div class="row">
+  <div class="muted" style="margin-top:6px">Opening bid ${fmt(l.open)}${h&&!sold?` · Top bid <b style="color:var(--ink)">${fmt(h.amount)}</b> by <b style="color:var(--orange)">${esc(teamById(h.teamId)?.name)}</b>`:''}</div>
+  ${bidBoard(l,false)}${status}</div>
+  <div class="card" style="margin-top:14px">${needLeader().length?`<p class="note" style="margin-top:0">Appoint a leader for every group so their phone can bid: ${needLeader().map(t=>esc(t.name)).join(', ')}. Use the group cards below, or bid for them with the group buttons.</p>`:''}<div class="row">
    <button class="btn sec sm" onclick="goLot(-1)" ${c.current===0?'disabled':''}>← Previous lot</button>
    ${!sold&&c.lotState==='waiting'?`<button class="btn" onclick="writeCfg({lotState:'open'})">Open bidding</button>`:''}
-   ${open?`<button class="btn sec" onclick="writeCfg({lotState:'once'})">Going once</button><button class="btn sec" onclick="writeCfg({lotState:'twice'})">Going twice</button><button class="btn dark" onclick="sellLot()">${h?'Sold!':'Mark unclaimed'}</button><button class="btn ghost sm" onclick="undoBid()" ${h?'':'disabled'}>Undo last bid</button>`:''}
+   ${open?`<button class="btn sec" onclick="writeCfg({lotState:'once'})">Going once</button><button class="btn sec" onclick="writeCfg({lotState:'twice'})">Going twice</button><button class="btn dark" onclick="sellLot()">${h?'Sold to top bidder':'Mark unclaimed'}</button><button class="btn ghost sm" onclick="undoBid()" ${h?'':'disabled'}>Undo last bid</button>`:''}
    ${l.twist&&!c.twistAnnounced?`<button class="btn dark" onclick="writeCfg({twistAnnounced:true})">Announce twist rule</button>`:''}
    ${sold?`<button class="btn ghost sm" onclick="reopen()">Reopen lot</button>`:''}
    <button class="btn sm" onclick="goLot(1)">Next lot →</button></div>
-   ${open?`<p class="muted" style="margin:12px 0 6px">Bid for a group from here (for paddles raised in the room):</p><div class="hbtns">${c.teams.map(t=>{const nb=nextBidAmount(l);const lead=h&&h.teamId===t.id;return `<button class="btn sm ${lead?'dark':'sec'}" ${lead||nb>teamLeft(t.id)?'disabled':''} onclick="hostBid('${t.id}')">${esc(t.name)} · ${fmt(nb)}</button>`}).join('')}</div>`:''}</div></div>
-  <div><div class="card"><h3>Bids on this lot</h3><div class="ticker">${list.map(b=>`<div>${fmt(b.amount)} · ${esc(teamById(b.teamId)?.name)}</div>`).join('')||'<p class="muted">Waiting for the first paddle</p>'}</div></div>
-  <div class="card teambars"><h3>Group purses</h3>${c.teams.map(t=>{const left=teamLeft(t.id);return `<div class="tb"><div class="lab"><span>${esc(t.name)}</span><span>${fmt(left)}</span></div><div class="bar"><i style="width:${pct(left,c.teamBudget)}%"></i></div></div>`}).join('')}</div>
-  <div class="card"><h3>Sold board</h3>${soldList(false)}</div></div></div>`;
+   ${assign}
+   ${open?`<p class="muted" style="margin:12px 0 6px">Record a paddle raised in the room:</p><div class="hbtns">${c.teams.map(t=>{const nb=nextBidAmount(l);const lead=h&&h.teamId===t.id;return `<button class="btn sm ${lead?'dark':'sec'}" ${lead||nb>teamLeft(t.id)?'disabled':''} onclick="hostBid('${t.id}')">${esc(t.name)} · ${fmt(nb)}</button>`}).join('')}</div>`:''}</div></div>
+  <div><div class="card teambars"><h3>Group purses</h3>${c.teams.map(t=>{const left=teamLeft(t.id);return `<div class="tb"><div class="lab"><span>${esc(t.name)}</span><span>${fmt(left)}</span></div><div class="bar"><i style="width:${pct(left,c.teamBudget)}%"></i></div></div>`}).join('')}</div>
+  <div class="card"><h3>Sold board</h3>${soldList(false)}</div></div></div>
+  ${needLeader().length?teamsBoard(t=>(teamMembers(t.id).map(([u,p])=>`<div class="member"><span>${esc(p.name)}${leaderOf(t.id)===u?' ★ Leader':''}</span></div>`).join('')||'<p class="muted">Members appear here.</p>')+(teamMembers(t.id).length?leaderPicker(t):'')):''}`;
 }
 function soldList(showMeta){
   const c=S.cfg; return lots().map((l,i)=>{const s=c.sold&&c.sold[l.id];if(!s)return '';return `<div class="member"><span>${i+1}. ${esc(l.text)} ${showMeta?`<span class="tag ${l.size}">${l.size}</span> ${c.revealWhom?`<span class="tag ${l.whom}">${l.whom}</span>`:''}`:''}</span><b>${s.team?esc(teamById(s.team)?.name)+' · '+fmt(s.price):'Unclaimed'}</b></div>`}).join('')||'<p class="muted">Sold lots appear here.</p>';
@@ -541,10 +604,19 @@ function goLot(d){const n=Math.min(lots().length,Math.max(0,S.cfg.current+d));co
 async function hostBid(tid){const l=curLot();const amt=nextBidAmount(l);try{await S.db.collection('bids').add({session:S.cfg.session,lotId:l.id,teamId:tid,amount:amt,uid:S.uid,host:true,t:Date.now()})}catch(e){toast('Bid could not be placed')}}
 async function undoBid(){const h=highBid(curLot().id);if(!h)return;try{await S.db.doc('bids/'+h._id).delete()}catch(e){toast('Could not undo')}}
 function sellLot(){
-  const l=curLot(),list=lotBids(l.id),sold=Object.assign({},S.cfg.sold||{});
-  if(!list.length){sold[l.id]={team:null,price:0};return writeCfg({sold,lotState:'sold'})}
-  const w=list[0];const rec={team:w.teamId,price:w.amount};
-  if(l.twist){const r=list.find(b=>b.teamId!==w.teamId);if(r){rec.runner=r.teamId;rec.runnerPrice=r.amount}}
+  const l=curLot(),list=lotBids(l.id);
+  if(!list.length){const sold=Object.assign({},S.cfg.sold||{});sold[l.id]={team:null,price:0};return writeCfg({sold,lotState:'sold'})}
+  recordSale(l,list[0].teamId,list[0].amount);
+}
+function assignLot(){
+  const l=curLot(),a=S.asg||{};const amt=Math.max(0,Math.round(+a.amt||0));
+  if(!a.team) return toast('Choose a group');
+  const left=teamLeft(a.team); if(amt>left) return toast(`${teamById(a.team)?.name} has ${fmt(left)} left`);
+  recordSale(l,a.team,amt); S.asg=null; toast('Lot assigned to '+teamById(a.team)?.name);
+}
+function recordSale(l,team,price){
+  const sold=Object.assign({},S.cfg.sold||{});const rec={team,price};
+  if(l.twist){const r=teamStandings(l.id).find(b=>b.teamId!==team);if(r){rec.runner=r.teamId;rec.runnerPrice=r.amount}}
   sold[l.id]=rec;writeCfg({sold,lotState:'sold'});
 }
 function reopen(){const sold=Object.assign({},S.cfg.sold);delete sold[curLot().id];writeCfg({sold,lotState:'open'})}
@@ -570,14 +642,48 @@ function hostDebrief(){
   return `<div class="tabs ctl">${tabs.map(([k,n])=>`<button class="${tab===k?'on':''}" onclick="writeCfg({debriefTab:'${k}'})">${n}</button>`).join('')}</div>${body}`;
 }
 function hostReports(){
+  if(S.slide!=null||S.printAll) return presentView();
   const t=S.rTab;const tabs=[['group','Group report'],['people','Individual reports'],['wall','Commitment wall']];
   let body='';
   if(t==='group') body=groupReport();
   if(t==='people'){const ids=Object.keys(S.players);const sel=S.viewPlayer&&S.players[S.viewPlayer]?S.viewPlayer:ids[0];
     body=`<div class="row" style="margin-bottom:12px"><select style="padding:10px;border-radius:10px;border:1px solid var(--line)" onchange="S.viewPlayer=this.value;render(true)">${ids.map(u=>`<option value="${u}" ${u===sel?'selected':''}>${esc(S.players[u].name)} · ${esc(teamById(S.players[u].team)?.name||'')}</option>`).join('')}</select></div>${sel?`<div class="phone" style="max-width:720px">${individualReport(sel,false)}</div>`:'<p class="muted">Participants appear here as they join.</p>'}`}
   if(t==='wall'){const cm=Object.values(S.players).filter(p=>p.commitment);body=`<div class="card center"><h2>The Ambitions We Carry</h2></div><div class="wall">${cm.map(p=>`<div class="cmt">"${esc(p.commitment)}"<div class="muted" style="margin-top:6px">— ${esc(p.name)}</div></div>`).join('')||'<p class="muted">Commitments appear here as people save them on their phones.</p>'}</div>`}
-  return `<div class="tabs">${tabs.map(([k,n])=>`<button class="${t===k?'on':''}" onclick="S.rTab='${k}';render(true)">${n}</button>`).join('')}<button class="btn sm sec ctl" onclick="downloadCSV()">Download results (CSV)</button></div>${body}`;
+  return `<div class="tabs"><button class="btn" style="border:0" onclick="S.slide=0;render(true)">▶ Present the report</button><button class="btn sm sec" onclick="printReport()">Print / save as PDF</button>${tabs.map(([k,n])=>`<button class="${t===k?'on':''}" onclick="S.rTab='${k}';render(true)">${n}</button>`).join('')}<button class="btn sm sec ctl" onclick="downloadCSV()">Download results (CSV)</button></div>${body}`;
 }
+function reportSlides(){
+  const c=S.cfg,ps=Object.values(S.players),bought=breakdown(roomBought(),'whom'),totB=sumObj(bought),priv=roomPrivate('whom');
+  const sizeB={};SIZES.forEach(k=>sizeB[k]=0);Object.entries(roomBought()).forEach(([l,v])=>{const x=lotById(l);if(x)sizeB[x.size]+=v});
+  const tl=lots().find(l=>l.twist),ts=tl&&c.sold&&c.sold[tl.id];
+  const rival=Object.values(c.sold||{}).reduce((a,x)=>a+(x.runnerPrice||0),0);
+  const cm=ps.filter(p=>p.commitment);
+  const legend=`<div class="legend">${WHOM.map(k=>`<span><i style="background:${WCOL[k]}"></i>${k}</span>`).join('')}</div>`;
+  return [
+   `<div class="kick">The Ambition Auction · Results</div><h1>What this room bought today</h1><p class="lead">${esc(new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}))}</p>
+    <div class="grid3"><div class="card"><div class="kpi">${ps.length}</div><div class="muted">leaders took part</div></div><div class="card"><div class="kpi">${fmt(totB)}</div><div class="muted">spent on ambitions</div></div><div class="card"><div class="kpi">${pct(bought.Self,totB)}%</div><div class="muted">of group money went to ambitions for self</div></div></div>`,
+   `<div class="kick">Movement 1</div><h1>How big did we dare?</h1><p class="lead">Where private money went, and what the groups actually bought.</p>
+    <h3>Private sheets</h3>${spendBar(roomPrivate('size'))}<h3 style="margin-top:14px">Group purchases</h3>${spendBar(sizeB)}<div class="legend">${SIZES.map(k=>`<span><i style="background:${SCOL[k]}"></i>${k}</span>`).join('')}</div>`,
+   `<div class="kick">Movement 2</div><h1>When did ambition become rivalry?</h1><p class="lead">${tl?esc(tl.text):'The twist lot'}</p>
+    ${ts&&ts.team?`<div class="grid3"><div class="card"><div class="muted">Winner paid</div><div class="kpi">${fmt(ts.price)}</div><div>${esc(teamById(ts.team)?.name)}</div></div><div class="card"><div class="muted">Runner-up also paid</div><div class="kpi">${fmt(ts.runnerPrice||0)}</div><div>${esc(teamById(ts.runner)?.name||'—')}</div></div><div class="card"><div class="muted">Total for one ambition</div><div class="kpi" style="color:var(--orange)">${fmt(ts.price+(ts.runnerPrice||0))}</div><div>${tl.open?((ts.price+(ts.runnerPrice||0))/tl.open).toFixed(1):'—'}× the opening bid</div></div></div>
+    <div class="feed" style="margin-top:16px">${bidFeed(tl.id).map((b,i)=>`${i?'<span class="arr">→</span>':''}<span class="f">${esc(teamById(b.teamId)?.name||'')} ${fmt(b.amount)}</span>`).join('')}</div>`:'<p class="muted">The twist lot results appear here once it is sold.</p>'}`,
+   `<div class="kick">Movement 3</div><h1>Whose voice won?</h1><p class="lead">How closely each group's purchases matched its members' private sheets.</p>
+    <table><tr><th>Group</th><th>Leader</th><th>Match with private sheets</th><th>Spent</th></tr>${c.teams.filter(t=>teamMembers(t.id).length).map(t=>{const m=teamMembers(t.id),avg=m.length?Math.round(m.reduce((a,[u,p])=>a+alignment(p),0)/m.length):0;return `<tr><td><b>${esc(t.name)}</b></td><td>${esc((S.players[leaderOf(t.id)]||{}).name||'—')}</td><td><b>${avg}%</b></td><td>${fmt(teamSpent(t.id))}</td></tr>`}).join('')}</table>`,
+   `<div class="kick">Movement 4</div><h1>The Spend Map</h1><p class="lead">These ambitions had four owners: self, people, the bank and society.</p>
+    <h3>Group purchases</h3>${spendBar(bought)}<h3 style="margin-top:14px">Private sheets</h3>${spendBar(priv)}${legend}${rival?`<p class="note" style="margin-top:14px">Spent on rivalry (runner-up payments): <b>${fmt(rival)}</b></p>`:''}`,
+   `<div class="kick">Results by group</div><h1>What each group bought</h1>
+    <table><tr><th>Group</th><th>Ambitions won</th><th>Spent</th><th>For self</th></tr>${c.teams.filter(t=>teamMembers(t.id).length||teamWon(t.id).length).map(t=>{const won=teamWon(t.id),b=breakdown(teamBought(t.id),'whom'),tot=sumObj(b);return `<tr><td><b>${esc(t.name)}</b></td><td>${won.map(l=>esc(lotById(l)?.text||'')).join('<br>')||'—'}</td><td>${fmt(teamSpent(t.id))}</td><td>${pct(b.Self,tot)}%</td></tr>`}).join('')}</table>`,
+   `<div class="kick">Movement 5</div><h1>The Ambitions We Carry</h1><div class="wall" style="margin-top:12px">${cm.map(p=>`<div class="cmt">"${esc(p.commitment)}"<div class="muted" style="margin-top:6px">— ${esc(p.name)}</div></div>`).join('')||'<p class="muted">Commitments appear here as leaders save them on their phones.</p>'}</div>`,
+   `<div class="center"><div class="kick">Closing</div><h1 style="font-size:clamp(30px,3.8vw,52px)">"Ambition is a gift. The question is how large your ambition is, and how many people fit inside it."</h1><p class="lead">Your role is to bring every private sheet to the table.</p></div>`
+  ];
+}
+function presentView(){
+  const sl=reportSlides();
+  if(S.printAll) return sl.map(x=>`<div class="slide">${x}</div>`).join('');
+  const i=Math.max(0,Math.min(sl.length-1,S.slide));S.slide=i;
+  return `<div class="slide">${sl[i]}</div><div class="slidenav"><button class="btn sec" onclick="S.slide--;render(true)" ${i===0?'disabled':''}>← Previous</button><span class="muted"><b>${i+1}</b> / ${sl.length} · arrow keys work too</span><div class="row"><button class="btn ghost sm" onclick="S.slide=null;render(true)">Exit</button><button class="btn" onclick="S.slide++;render(true)" ${i===sl.length-1?'disabled':''}>Next →</button></div></div>`;
+}
+function printReport(){S.printAll=true;render(true);setTimeout(()=>{try{window.print()}catch(e){}S.printAll=false;render(true)},300)}
+document.addEventListener('keydown',e=>{if(!S.host||S.slide==null||!S.cfg||S.cfg.phase!=='reports')return;if(e.key==='ArrowRight'||e.key===' '){S.slide++;render(true)}else if(e.key==='ArrowLeft'){S.slide=Math.max(0,S.slide-1);render(true)}else if(e.key==='Escape'){S.slide=null;render(true)}});
 function groupReport(){
   const c=S.cfg,bought=breakdown(roomBought(),'whom'),priv=roomPrivate('whom'),totB=sumObj(bought),unclaimed=lots().filter(l=>c.sold&&c.sold[l.id]&&!c.sold[l.id].team),unsold=lots().filter(l=>!(c.sold&&c.sold[l.id]));
   const rival=Object.values(c.sold||{}).reduce((a,x)=>a+(x.runnerPrice||0),0);
