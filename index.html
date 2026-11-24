@@ -263,8 +263,9 @@ const DEFAULT_LOTS=[
  ["Families across Kerala take gold loans from ICICI at fair rates and leave high-cost lenders: ₹7,500 crore of gold loans disbursed by April 2029.","Stretch","Society",10000,1.0],
  ["The next three Zonal Heads of Kerala are people you developed.","Safe","People",10000,1.5]
 ];
+const SETUP_V='2026-11-24';
 function defaultConfig(){
-  return {session:'s'+Date.now(),phase:'lobby',
+  return {setupVersion:SETUP_V,session:'s'+Date.now(),phase:'lobby',
     lots:DEFAULT_LOTS.map((l,i)=>({id:'L'+(i+1),text:l[0],size:l[1],whom:l[2],open:l[3],impact:l[4],twist:i===8})),
     teams:['North Malabar','South Malabar','Palakkad Gateway','Thrissur Heritage','Kochi Metro','High Range','Central Travancore','Capital Region'].map((n,i)=>({id:'T'+(i+1),name:n})),
     indBudget:100000,teamBudget:500000,inc:10000,baseShare:10,
@@ -704,12 +705,13 @@ function hostLobby(){
   const n=Object.keys(S.players).length;
   return `<div class="grid2"><div class="card center"><h2>Scan to join the auction</h2><div id="qr" style="display:inline-block;padding:12px;background:#fff;border-radius:12px"></div>
   <p style="font-weight:800;word-break:break-all">${esc(joinUrl())}</p><div class="big">${n}</div><div class="muted">people joined</div></div>
-  <div class="card ctl"><h2>Facilitator setup</h2><p class="muted">Edit lots, groups and budgets before you start.</p><button class="btn" onclick="S.editLots=JSON.parse(JSON.stringify(S.cfg));render(true)">Edit lots, groups and budgets</button>
+  <div class="card ctl"><h2>Facilitator setup</h2>${S.cfg.setupVersion!==SETUP_V?`<div class="note" style="border-left:5px solid var(--orange);margin-bottom:12px"><b>A newer setup is ready.</b> This game still uses older lots or groups. Load the final 12 lots, the 8 zone teams and the ₹5,00,000 kitty.<div style="margin-top:8px"><button class="btn" onclick="loadLatestSetup()">Load the latest lots and zone teams</button></div></div>`:''}<p class="muted">Edit lots, groups and budgets before you start.</p><button class="btn" onclick="S.editLots=JSON.parse(JSON.stringify(S.cfg));render(true)">Edit lots, groups and budgets</button>
   <button class="btn sec" style="margin-top:8px" onclick="S.confirmReset=true;render(true)">Start a fresh game</button>
   ${S.confirmReset?`<div class="note" style="margin-top:10px">A fresh game clears every sheet, plan and bid, and keeps your lots and groups. <div class="row" style="margin-top:8px"><button class="btn sm dark" onclick="resetGame()">Yes, start fresh</button><button class="btn sm sec" onclick="S.confirmReset=false;render(true)">Keep this game</button></div></div>`:''}</div></div>
   ${S.editLots?setupEditor():''}
   ${teamsBoard(t=>(teamMembers(t.id).map(([u,p])=>`<div class="member"><span>${esc(p.name)}${leaderOf(t.id)===u?' ★ Leader':''}</span></div>`).join('')||'<p class="muted">Waiting for members</p>')+(teamMembers(t.id).length?leaderPicker(t):''))}`;
 }
+function loadLatestSetup(){const d=defaultConfig();writeCfg({setupVersion:SETUP_V,lots:d.lots,teams:d.teams,teamBudget:d.teamBudget,inc:d.inc,baseShare:d.baseShare,leaders:{},leaderNames:{},sold:{},current:0,lotState:'waiting',twistAnnounced:false});toast('Latest lots and zone teams loaded')}
 function resetGame(){S.confirmReset=false;const c=Object.assign({},S.cfg,{session:'s'+Date.now(),phase:'lobby',current:0,lotState:'waiting',twistAnnounced:false,sold:{},revealWhom:false,revealShare:false,debriefTab:'size'});S.cfg=c;saveDoc('config/game',c);resubscribe();render(true);toast('Fresh game ready')}
 function setupEditor(){
   const e=S.editLots;
