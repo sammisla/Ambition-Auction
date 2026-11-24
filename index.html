@@ -129,6 +129,8 @@ td input,td select{border:1px solid var(--line);border-radius:8px;padding:7px;wi
 .finding{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--line)}
 .finding .n{min-width:30px;height:30px;border-radius:50%;background:var(--maroon);color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center}
 .profile{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.profile span{background:var(--maroon);color:#fff;border-radius:999px;padding:6px 14px;font-weight:800}
+.botbar{position:sticky;top:0;z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:#2A1520;color:#fff;border-radius:12px;padding:8px 14px;margin-bottom:12px;font-weight:700}
+.botbar .btn.sec{background:#fff}
 .tsel{width:100%;font-size:26px;font-weight:900;text-align:center;padding:12px;border:2px solid var(--maroon);border-radius:12px;color:var(--maroon);background:#fff}
 .ticker div{padding:6px 0;border-bottom:1px dashed var(--line);font-weight:700}
 .teambars .tb{margin-bottom:10px}
@@ -686,6 +688,89 @@ function roomFindings(){
 function shortLot(l){let t=l.text.replace(/^(By April 20\d\d|Every year|Next year),\s*/i,'').split(/[:.]/)[0];t=t.charAt(0).toUpperCase()+t.slice(1);return t.length>48?t.slice(0,46).trim()+'…':t}
 function findingsCard(title,list){return `<div class="card"><h2>${title}</h2>${list.map((x,i)=>`<div class="finding"><div class="n">${i+1}</div><div>${x}</div></div>`).join('')||'<p class="muted">Findings appear as the game progresses.</p>'}</div>`}
 
+
+// =================== BOT DEMO (40 bots, watch-only) ===================
+const BOT_NAMES=['Anil Menon','Priya Nair','Rahul Pillai','Divya Thomas','Suresh Kumar','Anjali Varma','Joseph Mathew','Lakshmi Iyer','Vivek Raj','Meera Krishnan','Arun Das','Sneha George','Kiran Shenoy','Fathima Rahman','Deepak Warrier','Nisha Joseph','Manoj Kurup','Revathi Menon','Ajay Nambiar','Teena Philip','Sanjay Gupta','Asha Pillai','Rohit Sharma','Kavya Raghavan','Naveen Unni','Smitha Paul','Harish Rao','Bindu Gopal','Imran Khan','Reshma Babu','Gautam Bose','Lekha Mohan','Vinod Chacko','Shalini Menon','Prakash Nair','Anu Varghese','Dinesh Iyer','Neha Kapoor','Sajan Abraham','Gayathri Suresh'];
+const BOT_HL={Bank:['ICICI overtakes Federal Bank as the first choice of Kerala\'s NRI families','ICICI becomes the bank every Kerala HNI family trusts with its wealth','ICICI finances the ships that make Vizhinjam India\'s gateway port','Kerala families choose ICICI for remittances, savings and gold'],
+ People:['ICICI\'s Kerala team becomes the bank\'s leadership academy','The next generation of ICICI leaders grows up in Kerala','Every ICICI branch in Kerala has a leader ready to take over','Kerala branch teams lead ICICI\'s fastest growth in India'],
+ Society:['ICICI-funded startups create 10,000 jobs across Kerala','Kerala families leave high-cost lenders for fair ICICI gold loans','ICICI helps one in five Kerala students study abroad','ICICI becomes the bank of Kerala\'s young entrepreneurs'],
+ Self:['Kerala becomes ICICI\'s most celebrated growth story','ICICI\'s Kerala playbook becomes the bank-wide model','ICICI doubles its share in Kerala in three years','Kerala zone rises to the top of ICICI\'s league']};
+const BOT_CM=['Back my number with one Stretch move each quarter, with my branch managers inside it.','Bring every branch manager\'s idea to our monthly review, and fund the best one.','Build one ready successor in every branch by March.','Lead our NRI push with my team, and share the credit with them.','Spend more of my time on people strategies, the ones that move every other number.','Say my aspiration out loud to my team, and ask them to hold me to it.'];
+const rnd=(a,b)=>a+Math.random()*(b-a), pick=a=>a[Math.floor(Math.random()*a.length)];
+const sleep=ms=>new Promise(r=>{const step=()=>{if(!S.bot||!S.bot.on)return r();if(S.bot.paused)return setTimeout(step,250);r()};setTimeout(step,ms/(S.bot?S.bot.speed:1))});
+function botBar(){if(!S.bot||!S.bot.on)return '';const b=S.bot;
+  return `<div class="botbar"><b>🤖 Bot demo</b><span>${esc(b.stage||'')}</span><span class="row" style="gap:4px">${[1,2,4].map(v=>`<button class="btn sm ${b.speed===v?'':'sec'}" onclick="S.bot.speed=${v};render(true)">${v}×</button>`).join('')}</span><button class="btn sm sec" onclick="S.bot.paused=!S.bot.paused;render(true)">${b.paused?'Resume':'Pause'}</button><button class="btn sm dark" onclick="stopBots()">Stop</button></div>`}
+function stopBots(){if(S.bot)S.bot.on=false;S.bot=null;S.pulse=false;render(true);toast('Bot demo stopped')}
+function stage(t){if(S.bot){S.bot.stage=t;render(true)}}
+async function startBots(){
+  S.confirmBots=false;const N=40,d=defaultConfig();
+  S.bot={on:true,speed:1,paused:false,stage:'Setting up'};
+  const c=Object.assign({},S.cfg,{setupVersion:SETUP_V,lots:d.lots,teams:d.teams,teamBudget:d.teamBudget,inc:d.inc,baseShare:d.baseShare,leaders:{},leaderNames:{},session:'demo'+Date.now(),phase:'lobby',current:0,lotState:'waiting',twistAnnounced:false,sold:{},revealWhom:false,revealShare:false,debriefTab:'size'});
+  S.cfg=c;saveDoc('config/game',c);resubscribe();render(true);
+  const T=c.teams.map(t=>t.id),L=c.lots;
+  const bots=BOT_NAMES.slice(0,N).map((name,i)=>{const sz={Safe:rnd(.5,1.6),Stretch:rnd(.6,1.5),Bold:rnd(.3,1.4)},wh={Self:rnd(.3,1.6),People:rnd(.4,1.4),Bank:rnd(.6,1.6),Society:rnd(.3,1.3)};
+    const rank=L.map(l=>[l.id,sz[l.size]*wh[l.whom]*rnd(.7,1.3)+(+l.impact||0)*rnd(0,.25)]).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+    const topW=Object.entries(wh).sort((a,b)=>b[1]-a[1])[0][0];
+    return {uid:'bot-'+String(i+1).padStart(2,'0'),name,team:T[i%T.length],rank,target:Math.round(Math.min(40,Math.max(11,10+rnd(2,18)*(sz.Bold+sz.Stretch)/2))),headline:pick(BOT_HL[topW]),commitment:pick(BOT_CM)}});
+  // 1. join
+  stage('Players joining');
+  for(const b of bots){if(!S.bot)return;saveDoc('players/'+b.uid,{session:c.session,name:b.name,team:b.team,t:Date.now(),rank:[],submitted:false,commitment:'',bot:true});await sleep(150)}
+  await sleep(2500);
+  // 2. individual sheets
+  setPhase('individual');stage('Writing private sheets');await sleep(1500);
+  S.pulse=true;S.pTab='numbers';S.pNames=true;render(true);
+  for(const b of shuffle(bots)){if(!S.bot)return;saveDoc('players/'+b.uid,{session:c.session,name:b.name,team:b.team,t:Date.now(),rank:b.rank,target:b.target,headline:b.headline,submitted:true,commitment:'',bot:true});await sleep(rnd(250,700))}
+  await sleep(4000);S.pTab='cloud';render(true);stage('Room pulse: headlines');await sleep(6000);S.pulse=false;render(true);
+  // 3. leaders and priorities
+  stage('Appointing leaders');const leaders={},leaderNames={};
+  T.forEach(tid=>{const m=bots.filter(b=>b.team===tid);if(!m.length)return;const ld=pick(m);leaders[tid]=ld.uid;leaderNames[tid]=ld.name;
+    const sc={};L.forEach(l=>sc[l.id]=0);m.forEach(b=>b.rank.forEach((id,i)=>sc[id]+=Math.max(0,8-i)));
+    const tr=L.map(l=>l.id).sort((a,b)=>sc[b]-sc[a]);
+    saveDoc('teams/'+c.session+'-'+tid,{teamId:tid,rank:tr,maxBid:{},session:c.session,updatedBy:S.uid})});
+  writeCfg({leaders,leaderNames});await sleep(2500);
+  // 4. auction
+  setPhase('auction');await sleep(1500);
+  const agg={};T.forEach(t=>agg[t]=rnd(.75,1.45));
+  for(let i=0;i<L.length;i++){
+    if(!S.bot)return;const l=L[i];writeCfg({current:i,lotState:'waiting'});stage(`Auction · lot ${i+1} of ${L.length}`);await sleep(1800);
+    if(l.twist){writeCfg({twistAnnounced:true});await sleep(1500)}
+    writeCfg({lotState:'open'});await sleep(1200);
+    let hi=null,idle=0;
+    while(S.bot){
+      const next=hi?hi.amount+S.cfg.inc:l.open;
+      const cands=T.filter(tid=>{if(hi&&hi.team===tid)return false;const left=teamLeft(tid);if(next>left)return false;
+        const tr=((S.teams[tid]||{}).rank||[]),pri=Math.max(0,tr.indexOf(l.id));const remainingWanted=tr.slice(0,6).filter(id=>!(S.cfg.sold||{})[id]).length||1;
+        let cap=left/remainingWanted*(pri<2?1.9:pri<4?1.3:pri<6?0.8:0.25)*agg[tid];
+        if(l.twist&&hi&&lotBids(l.id).some(b=>b.teamId===tid))cap=Math.max(cap,Math.min(left*.55,hi.amount*1.6));
+        return next<=cap});
+      if(cands.length&&Math.random()<0.88){
+        const tid=pick(cands);const jump=Math.random()<0.12?S.cfg.inc:0;const amt=next+jump;
+        hi={team:tid,amount:amt};idle=0;
+        try{await S.db.collection('bids').add({session:c.session,lotId:l.id,teamId:tid,amount:amt,uid:S.uid,host:true,bot:true,t:Date.now()})}catch(e){}
+        if(S.cfg.lotState!=='open')writeCfg({lotState:'open'});
+        await sleep(rnd(700,1400));
+      } else {
+        idle++;
+        if(idle===1){writeCfg({lotState:'once'});await sleep(1600)}
+        else if(idle===2){writeCfg({lotState:'twice'});await sleep(1600)}
+        else {await sleep(400);sellLot();await sleep(2600);break}
+      }
+    }
+  }
+  // 5. debrief
+  if(!S.bot)return;setPhase('debrief');
+  for(const [k,label] of [['size','Debrief · Moment 1'],['rivalry','Debrief · Moment 2'],['voice','Debrief · Moment 3'],['reveal','Debrief · Moment 4'],['share','Debrief · Moment 5']]){
+    if(!S.bot)return;stage(label);writeCfg({debriefTab:k});await sleep(3500);
+    if(k==='reveal'){writeCfg({revealWhom:true});await sleep(5000)}
+    if(k==='share'){writeCfg({revealShare:true});await sleep(5000)}
+  }
+  // 6. commitments and reports
+  stage('Commitments');for(const b of bots){if(!S.bot)return;const cur=S.players[b.uid]||{};saveDoc('players/'+b.uid,Object.assign({},cur,{commitment:b.commitment}));await sleep(80)}
+  setPhase('reports');S.rTab='group';stage('Demo complete · reports ready');await sleep(800);
+  if(S.bot){S.bot.on=false;S.bot.done=true;render(true);toast('Bot demo complete. Open Individual reports or Present the report.')}
+}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
 // =================== HOST ===================
 function renderHost(){
   const c=S.cfg; document.getElementById('app').className='wrap'+(S.presenter?' presenter':'')+(c.phase==='auction'&&curLot()?' hasbar':'');
@@ -693,9 +778,9 @@ function renderHost(){
    <button class="btn sm sec" style="margin-left:8px" onclick="S.presenter=!S.presenter;render(true)">${S.presenter?'Show controls':'Presenter mode'}</button>
    <button class="btn sm ${S.pulse?'':'sec'}" style="margin-left:8px" onclick="S.pulse=!S.pulse;render(true)">${S.pulse?'Back to game':'Room pulse'}</button>
    <button class="btn sm sec ctl" onclick="location.hash='#play'">Player view</button>`;
-  if(S.pulse){app(hostPulse());return}
+  if(S.pulse){app(botBar()+hostPulse());return}
   const v={lobby:hostLobby,individual:hostIndividual,team:hostTeam,auction:hostAuction,debrief:hostDebrief,reports:hostReports}[c.phase]();
-  app(v);
+  app(botBar()+v);
   if(c.phase==='lobby') drawQR();
 }
 function setPhase(k){const patch={phase:k};if(k==='auction'){if(!c_started()){patch.lotState='waiting';patch.current=0}else if(!S.cfg.lotState)patch.lotState='waiting'}writeCfg(patch)}
@@ -705,7 +790,8 @@ function hostLobby(){
   const n=Object.keys(S.players).length;
   return `<div class="grid2"><div class="card center"><h2>Scan to join the auction</h2><div id="qr" style="display:inline-block;padding:12px;background:#fff;border-radius:12px"></div>
   <p style="font-weight:800;word-break:break-all">${esc(joinUrl())}</p><div class="big">${n}</div><div class="muted">people joined</div></div>
-  <div class="card ctl"><h2>Facilitator setup</h2>${S.cfg.setupVersion!==SETUP_V?`<div class="note" style="border-left:5px solid var(--orange);margin-bottom:12px"><b>A newer setup is ready.</b> This game still uses older lots or groups. Load the final 12 lots, the 8 zone teams and the ₹5,00,000 kitty.<div style="margin-top:8px"><button class="btn" onclick="loadLatestSetup()">Load the latest lots and zone teams</button></div></div>`:''}<p class="muted">Edit lots, groups and budgets before you start.</p><button class="btn" onclick="S.editLots=JSON.parse(JSON.stringify(S.cfg));render(true)">Edit lots, groups and budgets</button>
+  <div class="card ctl"><h2>Facilitator setup</h2>${S.cfg.setupVersion!==SETUP_V?`<div class="note" style="border-left:5px solid var(--orange);margin-bottom:12px"><b>A newer setup is ready.</b> This game still uses older lots or groups. Load the final 12 lots, the 8 zone teams and the ₹5,00,000 kitty.<div style="margin-top:8px"><button class="btn" onclick="loadLatestSetup()">Load the latest lots and zone teams</button></div></div>`:''}<p class="muted">Edit lots, groups and budgets before you start.</p>
+  <div class="note" style="margin-bottom:10px"><b>Watch a demo.</b> 40 bots join, fill their sheets, bid in 8 zone teams and reach the reports, while you watch.${S.confirmBots?`<div style="margin-top:8px">This starts a separate demo game and clears the current one. <div class="row" style="margin-top:6px"><button class="btn sm dark" onclick="startBots()">Yes, start the demo</button><button class="btn sm sec" onclick="S.confirmBots=false;render(true)">Cancel</button></div></div>`:`<div style="margin-top:8px"><button class="btn sm" onclick="S.confirmBots=true;render(true)">Watch 40 bots play</button></div>`}</div><button class="btn" onclick="S.editLots=JSON.parse(JSON.stringify(S.cfg));render(true)">Edit lots, groups and budgets</button>
   <button class="btn sec" style="margin-top:8px" onclick="S.confirmReset=true;render(true)">Start a fresh game</button>
   ${S.confirmReset?`<div class="note" style="margin-top:10px">A fresh game clears every sheet, plan and bid, and keeps your lots and groups. <div class="row" style="margin-top:8px"><button class="btn sm dark" onclick="resetGame()">Yes, start fresh</button><button class="btn sm sec" onclick="S.confirmReset=false;render(true)">Keep this game</button></div></div>`:''}</div></div>
   ${S.editLots?setupEditor():''}
