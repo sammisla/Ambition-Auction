@@ -285,10 +285,11 @@ const DEFAULT_LOTS=[
  ["By April 2029, ICICI finances 20,000 flood-resilient homes across Kerala's low-lying districts: ₹4,000 crore of home loans.", "Stretch", "Society", 10000, 0.4],
  ["Every year, ICICI helps 25,000 Kerala households start their first SIP or pension plan.", "Safe", "Society", 10000, 0.3]
 ];
-const SETUP_V='2026-11-26-32';
+const SETUP_V='2026-11-26-32t';
+const TWIST_IDX=[5,8,13,25]; // lots 6, 9, 14, 26
 function defaultConfig(){
   return {setupVersion:SETUP_V,session:'s'+Date.now(),phase:'lobby',
-    lots:DEFAULT_LOTS.map((l,i)=>({id:'L'+(i+1),text:l[0],size:l[1],whom:l[2],open:l[3],impact:l[4],twist:i===8})),
+    lots:DEFAULT_LOTS.map((l,i)=>({id:'L'+(i+1),text:l[0],size:l[1],whom:l[2],open:l[3],impact:l[4],twist:TWIST_IDX.includes(i)})),
     teams:['North Malabar','South Malabar','Palakkad Gateway','Thrissur Heritage','Kochi Metro','High Range','Central Travancore','Capital Region'].map((n,i)=>({id:'T'+(i+1),name:n})),
     indBudget:100000,teamBudget:350000,inc:10000,bigInc:25000,bigAt:100000,baseShare:10,
     current:0,lotState:'waiting',twistAnnounced:false,sold:{},revealWhom:false,debriefTab:'size'};
@@ -692,7 +693,7 @@ function roomFindings(){
   const sizeB={};SIZES.forEach(k=>sizeB[k]=0);Object.entries(roomBought()).forEach(([l,v])=>{const x=lotById(l);if(x)sizeB[x.size]+=v});const sb=sumObj(sizeB);
   const bought=breakdown(roomBought(),'whom'),tb=sumObj(bought),priv=roomPrivate('whom'),pt=sumObj(priv);
   const al=ps.length?Math.round(ps.reduce((a,p)=>a+alignment(p),0)/ps.length):0;
-  const tl=lots().find(l=>l.twist),ts=tl&&c.sold&&c.sold[tl.id];
+  const tl=topTwist(),ts=tl&&c.sold&&c.sold[tl.id],tws=twistLots(),twTot=tws.reduce((a,l)=>a+twistCost(l),0),twRun=tws.reduce((a,l)=>a+(((c.sold||{})[l.id]||{}).runnerPrice||0),0);
   const unsold=lots().filter(l=>!(c.sold&&c.sold[l.id]&&c.sold[l.id].team));
   const best=activeTeams().map(t=>[t.name,shareOf(teamWon(t.id))]).sort((a,b)=>b[1]-a[1])[0];
   const f=[];
@@ -701,11 +702,15 @@ function roomFindings(){
   if(sb)f.push(`Of the money spent, <b>${pct(sizeB.Safe,sb)}%</b> went to Safe lots, ${pct(sizeB.Stretch,sb)}% to Stretch and ${pct(sizeB.Bold,sb)}% to Bold.`);
   if(tb)f.push(`<b>${pct(bought.Self,tb)}%</b> of team money went to Self lots (private priorities: ${pct(priv.Self,pt)}%). People lots took ${pct(bought.People,tb)}%, Bank ${pct(bought.Bank,tb)}% and Society ${pct(bought.Society,tb)}%.`);
   if(ps.length)f.push(`On average, <b>${al}%</b> of each person's top priorities reached their team's table. ${al<40?'Many voices stayed on private sheets.':'Most voices shaped the table.'}`);
-  if(ts&&ts.team)f.push(`The twist lot cost the room <b>${fmt(ts.price+(ts.runnerPrice||0))}</b>, ${tl.open?((ts.price+(ts.runnerPrice||0))/tl.open).toFixed(1):'—'}× its opening bid, for +${tl.impact}% of market share.`);
+  if(ts&&ts.team)f.push(tws.length>1?`The ${tws.length} twist lots cost the room <b>${fmt(twTot)}</b>, including <b>${fmt(twRun)}</b> paid by runners-up for nothing in return. The costliest was Lot ${lotNo(tl)} (${esc(shortLot(tl))}): ${fmt(twistCost(tl))}, ${tl.open?(twistCost(tl)/tl.open).toFixed(1):'—'}× its opening bid, for +${tl.impact}% of market share.`:`The twist lot cost the room <b>${fmt(twistCost(tl))}</b>, ${tl.open?(twistCost(tl)/tl.open).toFixed(1):'—'}× its opening bid, for +${tl.impact}% of market share.`);
   if(best)f.push(`<b>${esc(best[0])}</b> built the strongest position: its purchases take Kerala to <b>${best[1]}%</b>.`);
   if(unsold.length)f.push(`${unsold.length} lot${unsold.length>1?'s':''} went unclaimed: ${unsold.map(l=>'Lot '+(lots().indexOf(l)+1)+' ('+esc(shortLot(l))+')').slice(0,4).join(', ')}${unsold.length>4?' and more':''}. Ask what kept the room away from them.`);
   return f;
 }
+function twistLots(){return lots().filter(l=>l.twist)}
+function twistCost(l){const x=(S.cfg.sold||{})[l.id];return x&&x.team?x.price+(x.runnerPrice||0):0}
+function topTwist(){const t=twistLots();if(!t.length)return null;return [...t].sort((a,b)=>twistCost(b)-twistCost(a))[0]}
+function lotNo(l){return lots().indexOf(l)+1}
 function shortLot(l){let t=l.text.replace(/^(By April 20\d\d|Every year|Next year),\s*/i,'').split(/[:.]/)[0];t=t.charAt(0).toUpperCase()+t.slice(1);return t.length>48?t.slice(0,46).trim()+'…':t}
 function findingsCard(title,list){return `<div class="card"><h2>${title}</h2>${list.map((x,i)=>`<div class="finding"><div class="n">${i+1}</div><div>${x}</div></div>`).join('')||'<p class="muted">Findings appear as the game progresses.</p>'}</div>`}
 
@@ -811,7 +816,7 @@ function hostLobby(){
   const n=Object.keys(S.players).length;
   return `<div class="grid2"><div class="card center"><h2>Scan to join the auction</h2><div id="qr" style="display:inline-block;padding:12px;background:#fff;border-radius:12px"></div>
   <p style="font-weight:800;word-break:break-all">${esc(joinUrl())}</p><div class="big">${n}</div><div class="muted">people joined</div></div>
-  <div class="card ctl"><h2>Facilitator setup</h2>${S.cfg.setupVersion!==SETUP_V?`<div class="note" style="border-left:5px solid var(--orange);margin-bottom:12px"><b>A newer setup is ready.</b> This game still uses older lots or groups. Load the final 32 lots, the 8 zone teams and the ₹3,50,000 kitty.<div style="margin-top:8px"><button class="btn" onclick="loadLatestSetup()">Load the latest lots and zone teams</button></div></div>`:''}<p class="muted">Edit lots, groups and budgets before you start.</p>
+  <div class="card ctl"><h2>Facilitator setup</h2>${S.cfg.setupVersion!==SETUP_V?`<div class="note" style="border-left:5px solid var(--orange);margin-bottom:12px"><b>A newer setup is ready.</b> This game still uses older lots or groups. Load the final 32 lots (with 4 twist lots), the 8 zone teams and the ₹3,50,000 kitty.<div style="margin-top:8px"><button class="btn" onclick="loadLatestSetup()">Load the latest lots and zone teams</button></div></div>`:''}<p class="muted">Edit lots, groups and budgets before you start.</p>
   <div class="note" style="margin-bottom:10px"><b>Watch a demo.</b> 40 bots join, fill their sheets, bid in 8 zone teams and reach the reports, while you watch.${S.confirmBots?`<div style="margin-top:8px">This starts a separate demo game and clears the current one. <div class="row" style="margin-top:6px"><button class="btn sm dark" onclick="startBots()">Yes, start the demo</button><button class="btn sm sec" onclick="S.confirmBots=false;render(true)">Cancel</button></div></div>`:`<div style="margin-top:8px"><button class="btn sm" onclick="S.confirmBots=true;render(true)">Watch 40 bots play</button></div>`}</div><button class="btn" onclick="S.editLots=JSON.parse(JSON.stringify(S.cfg));render(true)">Edit lots, groups and budgets</button>
   <button class="btn sec" style="margin-top:8px" onclick="S.confirmReset=true;render(true)">Start a fresh game</button>
   ${S.confirmReset?`<div class="note" style="margin-top:10px">A fresh game clears every sheet, plan and bid, and keeps your lots and groups. <div class="row" style="margin-top:8px"><button class="btn sm dark" onclick="resetGame()">Yes, start fresh</button><button class="btn sm sec" onclick="S.confirmReset=false;render(true)">Keep this game</button></div></div>`:''}</div></div>
@@ -822,14 +827,14 @@ function loadLatestSetup(){const d=defaultConfig();writeCfg({setupVersion:SETUP_
 function resetGame(){S.confirmReset=false;const c=Object.assign({},S.cfg,{session:'s'+Date.now(),phase:'lobby',current:0,lotState:'waiting',twistAnnounced:false,sold:{},revealWhom:false,revealShare:false,debriefTab:'size'});S.cfg=c;saveDoc('config/game',c);resubscribe();render(true);toast('Fresh game ready')}
 function setupEditor(){
   const e=S.editLots;
-  return `<div class="card ctl"><h2>Auction lots</h2><p class="muted">Edit the card text, size, for whom, opening bid and hidden market share impact. Mark one lot as the twist lot. Players see only the card text and opening bid.</p>
+  return `<div class="card ctl"><h2>Auction lots</h2><p class="muted">Edit the card text, size, for whom, opening bid and hidden market share impact. Tick one or more twist lots: on these, the runner-up also pays its last bid. Players see only the card text and opening bid.</p>
   <div style="overflow:auto"><table><tr><th>#</th><th style="min-width:260px">Text on the card</th><th>Size</th><th>For whom</th><th>Opening bid (₹)</th><th>Impact (%)</th><th>Twist</th><th></th></tr>
   ${e.lots.map((l,i)=>`<tr><td><b>${i+1}</b></td><td><input value="${esc(l.text)}" oninput="S.editLots.lots[${i}].text=this.value"></td>
   <td><select onchange="S.editLots.lots[${i}].size=this.value">${SIZES.map(s=>`<option ${l.size===s?'selected':''}>${s}</option>`).join('')}</select></td>
   <td><select onchange="S.editLots.lots[${i}].whom=this.value">${WHOM.map(s=>`<option ${l.whom===s?'selected':''}>${s}</option>`).join('')}</select></td>
   <td><input type="number" step="1000" min="0" value="${l.open}" oninput="S.editLots.lots[${i}].open=Math.max(0,+this.value||0)"></td>
   <td><input type="number" step="0.1" min="0" style="width:80px" value="${l.impact||0}" oninput="S.editLots.lots[${i}].impact=Math.max(0,+this.value||0)"></td>
-  <td><input type="radio" name="twist" ${l.twist?'checked':''} onchange="S.editLots.lots.forEach((x,j)=>x.twist=j===${i})"></td>
+  <td><input type="checkbox" ${l.twist?'checked':''} onchange="S.editLots.lots[${i}].twist=this.checked"></td>
   <td class="row" style="flex-wrap:nowrap"><button class="btn sm ghost" onclick="mvLot(${i},-1)">↑</button><button class="btn sm ghost" onclick="mvLot(${i},1)">↓</button><button class="btn sm ghost" onclick="S.editLots.lots.splice(${i},1);render(true)">Remove</button></td></tr>`).join('')}
   </table></div><button class="btn sm sec" style="margin-top:10px" onclick="S.editLots.lots.push({id:'L'+Date.now(),text:'New lot',size:'Stretch',whom:'Self',open:10000,impact:0,twist:false});render(true)">+ Add a lot</button>
   <h2 style="margin-top:20px">Groups</h2><div class="row">${e.teams.map((t,i)=>`<div class="row" style="gap:4px"><input style="border:1px solid var(--line);border-radius:8px;padding:8px;width:150px" value="${esc(t.name)}" oninput="S.editLots.teams[${i}].name=this.value"><button class="btn sm ghost" onclick="S.editLots.teams.splice(${i},1);render(true)">×</button></div>`).join('')}
@@ -922,8 +927,9 @@ function hostDebrief(){
   if(tab==='size'){const room=roomPrivate('size'),bought={};SIZES.forEach(k=>bought[k]=0);Object.entries(roomBought()).forEach(([l,v])=>bought[lotById(l).size]+=v);
     body=`<div class="grid2"><div class="card"><h2>Private priorities</h2>${spendBar(room)}<p class="muted">Each person\'s top ${TOPN} lots, first choice weighted most</p></div><div class="card"><h2>Group purchases</h2>${spendBar(bought)}<p class="muted">What the groups actually bought</p></div></div><div class="card"><h2>Sold board</h2>${soldList(true)}</div>
     <div class="note">Ask: "You chose a number. Did your priorities and your group\'s money follow it: safe, stretch or bold?"</div>`}
-  if(tab==='rivalry'){const tl=lots().find(l=>l.twist),s=tl&&c.sold&&c.sold[tl.id];
-    body=tl?`<div class="stage"><div class="lotno">The twist lot</div><div class="amb">${esc(tl.text)}</div>${s&&s.team?`<div class="grid3" style="margin-top:10px"><div><div class="muted">Winner paid</div><div class="kpi">${fmt(s.price)}</div><div>${esc(teamById(s.team)?.name)}</div></div><div><div class="muted">Runner-up paid</div><div class="kpi">${fmt(s.runnerPrice||0)}</div><div>${esc(teamById(s.runner)?.name||'—')}</div></div><div><div class="muted">Total spent on one aspiration</div><div class="kpi" style="color:var(--orange)">${fmt(s.price+(s.runnerPrice||0))}</div><div>${tl.open?((s.price+(s.runnerPrice||0))/tl.open).toFixed(1):'—'}× the opening bid</div></div></div>`:'<p class="muted">The twist lot is yet to be sold.</p>'}
+  if(tab==='rivalry'){const tws=twistLots(),tl=tws.find(l=>l.id===S.twSel)||topTwist(),s=tl&&c.sold&&c.sold[tl.id];
+    const pick=tws.length>1?`<div class="tabs ctl" style="margin-bottom:10px">${tws.map(l=>`<button class="${l.id===tl.id?'on':''}" onclick="S.twSel='${l.id}';render(true)">Lot ${lotNo(l)} · ${twistCost(l)?fmt(twistCost(l)):'unsold'}</button>`).join('')}</div><div class="note" style="margin-bottom:10px">All ${tws.length} twist lots together: <b>${fmt(tws.reduce((a,l)=>a+twistCost(l),0))}</b>, of which runners-up paid <b>${fmt(tws.reduce((a,l)=>a+(((c.sold||{})[l.id]||{}).runnerPrice||0),0))}</b>.</div>`:'';
+    body=tl?pick+`<div class="stage"><div class="lotno">Twist lot · Lot ${lotNo(tl)}</div><div class="amb">${esc(tl.text)}</div>${s&&s.team?`<div class="grid3" style="margin-top:10px"><div><div class="muted">Winner paid</div><div class="kpi">${fmt(s.price)}</div><div>${esc(teamById(s.team)?.name)}</div></div><div><div class="muted">Runner-up paid</div><div class="kpi">${fmt(s.runnerPrice||0)}</div><div>${esc(teamById(s.runner)?.name||'—')}</div></div><div><div class="muted">Total spent on one aspiration</div><div class="kpi" style="color:var(--orange)">${fmt(s.price+(s.runnerPrice||0))}</div><div>${tl.open?((s.price+(s.runnerPrice||0))/tl.open).toFixed(1):'—'}× the opening bid</div></div></div>`:'<p class="muted">The twist lot is yet to be sold.</p>'}
     <div class="ticker" style="max-width:520px;margin:16px auto 0">${lotBids(tl.id).slice().reverse().map(b=>`<div>${fmt(b.amount)} · ${esc(teamById(b.teamId)?.name)}</div>`).join('')}</div></div>
     <div class="note" style="margin-top:12px">Ask: "At what price did this stop being about leading the rollout and start being about the other team?"</div>`:'<p>Mark a twist lot in setup.</p>'}
   if(tab==='voice'){body=teamsBoard(t=>{const m=teamMembers(t.id).map(([u,p])=>[p,alignment(p)]).sort((a,b)=>b[1]-a[1]);const avg=m.length?Math.round(m.reduce((a,x)=>a+x[1],0)/m.length):0;return `<div class="kpi">${avg}%</div><div class="muted">average match between top priorities and group purchases</div>${m.map(([p,a])=>`<div class="member"><span>${esc(p.name)}</span><b>${a}%</b></div>`).join('')}`})+`<div class="note">Ask: "Whose aspiration shaped your group's table? Whose stayed on paper?"</div>`}
@@ -953,7 +959,7 @@ function hostReports(){
 function reportSlides(){
   const c=S.cfg,ps=Object.values(S.players),bought=breakdown(roomBought(),'whom'),totB=sumObj(bought),priv=roomPrivate('whom');
   const sizeB={};SIZES.forEach(k=>sizeB[k]=0);Object.entries(roomBought()).forEach(([l,v])=>{const x=lotById(l);if(x)sizeB[x.size]+=v});
-  const tl=lots().find(l=>l.twist),ts=tl&&c.sold&&c.sold[tl.id];
+  const tl=topTwist(),ts=tl&&c.sold&&c.sold[tl.id];
   const rival=Object.values(c.sold||{}).reduce((a,x)=>a+(x.runnerPrice||0),0);
   const cm=ps.filter(p=>p.commitment);
   const legend=`<div class="legend">${WHOM.map(k=>`<span><i style="background:${WCOL[k]}"></i>${k}</span>`).join('')}</div>`;
@@ -965,7 +971,7 @@ function reportSlides(){
    `<div class="kick">Our headlines</div><h1>April 2029, in our words</h1>${wordCloud(true)}`,
    `<div class="kick">Movement 1</div><h1>How big did we dare?</h1><p class="lead">Where private priorities pointed, and what the groups actually bought.</p>
     <h3>Private priorities</h3>${spendBar(roomPrivate('size'))}<h3 style="margin-top:14px">Group purchases</h3>${spendBar(sizeB)}<div class="legend">${SIZES.map(k=>`<span><i style="background:${SCOL[k]}"></i>${k}</span>`).join('')}</div>`,
-   `<div class="kick">Movement 2</div><h1>When did aspiration become rivalry?</h1><p class="lead">${tl?esc(tl.text):'The twist lot'}</p>
+   `<div class="kick">Movement 2</div><h1>When did aspiration become rivalry?</h1><p class="lead">${tl?(twistLots().length>1?'The costliest of '+twistLots().length+' twist lots: ':'')+esc(tl.text):'The twist lot'}</p>
     ${ts&&ts.team?`<div class="grid3"><div class="card"><div class="muted">Winner paid</div><div class="kpi">${fmt(ts.price)}</div><div>${esc(teamById(ts.team)?.name)}</div></div><div class="card"><div class="muted">Runner-up also paid</div><div class="kpi">${fmt(ts.runnerPrice||0)}</div><div>${esc(teamById(ts.runner)?.name||'—')}</div></div><div class="card"><div class="muted">Total for one aspiration</div><div class="kpi" style="color:var(--orange)">${fmt(ts.price+(ts.runnerPrice||0))}</div><div>${tl.open?((ts.price+(ts.runnerPrice||0))/tl.open).toFixed(1):'—'}× the opening bid</div></div></div>
     <div class="feed" style="margin-top:16px">${bidFeed(tl.id).map((b,i)=>`${i?'<span class="arr">→</span>':''}<span class="f">${esc(teamById(b.teamId)?.name||'')} ${fmt(b.amount)}</span>`).join('')}</div>`:'<p class="muted">The twist lot results appear here once it is sold.</p>'}`,
    `<div class="kick">Movement 3</div><h1>Whose voice won?</h1><p class="lead">How closely each group's purchases matched its members' top priorities.</p>
@@ -993,7 +999,7 @@ function groupReport(){
   const rival=Object.values(c.sold||{}).reduce((a,x)=>a+(x.runnerPrice||0),0);
   return findingsCard('Key findings',roomFindings())+`<div class="grid2"><div class="card"><h2>Our market share numbers</h2>${numbersChart(false)}</div><div class="card"><h2>Our April 2029 headlines</h2>${wordCloud(false)}</div></div><div class="grid3"><div class="card"><div class="kpi">${Object.keys(S.players).length}</div><div class="muted">participants</div></div><div class="card"><div class="kpi">${fmt(totB)}</div><div class="muted">spent on aspirations</div></div><div class="card"><div class="kpi">${pct(bought.Self,totB)}%</div><div class="muted">of group money went to Self ambitions</div></div></div>
   <div class="card"><h2>Room Spend Map</h2><h3>Group purchases</h3>${spendBar(bought)}<h3>Private sheets</h3>${spendBar(priv)}<div class="legend">${WHOM.map(k=>`<span><i style="background:${WCOL[k]}"></i>${k}</span>`).join('')}</div>
-  ${rival?`<p class="note">Spent on rivalry (runner-up payments on the twist lot): <b>${fmt(rival)}</b></p>`:''}
+  ${rival?`<p class="note">Spent on rivalry (runner-up payments on the twist lots): <b>${fmt(rival)}</b></p>`:''}
   ${unclaimed.length?`<p class="note">Lots that waited in silence: ${unclaimed.map(l=>esc(l.text)).join('; ')}</p>`:''}
   ${unsold.length?`<p class="muted">Lots still to be auctioned: ${unsold.length}</p>`:''}</div>
   ${teamsBoard(t=>{const won=teamWon(t.id),b=breakdown(teamBought(t.id),'whom'),m=teamMembers(t.id),avg=m.length?Math.round(m.reduce((a,[u,p])=>a+alignment(p),0)/m.length):0;
