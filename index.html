@@ -252,25 +252,45 @@ function toast(m){const t=document.getElementById('toast');t.textContent=m;t.cla
 const pct=(a,b)=>b?Math.round(a*100/b):0;
 
 const DEFAULT_LOTS=[
- ["By April 2029, more NRI families in Kerala send money home through ICICI than through Federal Bank: ₹50,000 crore of remittances a year.","Stretch","Bank",10000,4.0],
- ["Next year, you are given a larger zone with more branches.","Safe","Self",10000,0.2],
- ["By April 2029, ICICI funds 1,000 new Kerala businesses: 10,000 jobs and ₹500 crore of business.","Bold","Society",10000,1.0],
- ["By April 2029, 20 people you developed head critical specialist functions across the Bank.","Bold","People",10000,1.0],
- ["By April 2029, your zone is the main bank for the Vizhinjam port, financing its largest shipping companies.","Bold","Bank",10000,2.5],
- ["By April 2029, you become an Executive Director of the Bank and shape its strategic decisions.","Bold","Self",10000,0.1],
- ["Every year, ICICI funds 1 of every 5 students from Kerala who borrow to study abroad: ₹900 crore disbursed by April 2029.","Safe","Society",10000,0.8],
- ["By April 2027, every Branch Manager in your zone has a successor who is ready.","Safe","People",10000,0.7],
- ["Your Kerala strategy for NRI and gold customers becomes a Bank-wide strategy, and you lead the rollout.","Stretch","Self",10000,0.2],
- ["Every HNI customer ICICI already serves in Kerala invests their wealth through ICICI: ₹10,000 crore of new investments by April 2029.","Stretch","Bank",10000,2.0],
- ["Families across Kerala take gold loans from ICICI at fair rates and leave high-cost lenders: ₹7,500 crore of gold loans disbursed by April 2029.","Stretch","Society",10000,1.0],
- ["The next three Zonal Heads of Kerala are people you developed.","Safe","People",10000,1.5]
+ ["By April 2029, more NRI families in Kerala send money home through ICICI than through Federal Bank: ₹50,000 crore of remittances a year.", "Stretch", "Bank", 10000, 2.0],
+ ["Next year, you are given a larger zone with more branches.", "Safe", "Self", 10000, 0.1],
+ ["By April 2029, ICICI funds 1,000 new Kerala businesses: 10,000 jobs and ₹500 crore of business.", "Bold", "Society", 10000, 0.5],
+ ["By April 2029, 20 people you developed head critical specialist functions across the Bank.", "Bold", "People", 10000, 0.5],
+ ["By April 2029, your zone is the main bank for the Vizhinjam port, financing its largest shipping companies.", "Bold", "Bank", 10000, 1.2],
+ ["By April 2029, you become an Executive Director of the Bank and shape its strategic decisions.", "Bold", "Self", 10000, 0.05],
+ ["Every year, ICICI funds 1 of every 5 students from Kerala who borrow to study abroad: ₹900 crore disbursed by April 2029.", "Safe", "Society", 10000, 0.4],
+ ["By April 2027, every Branch Manager in your zone has a successor who is ready.", "Safe", "People", 10000, 0.4],
+ ["Your Kerala strategy for NRI and gold customers becomes a Bank-wide strategy, and you lead the rollout.", "Stretch", "Self", 10000, 0.1],
+ ["Every HNI customer ICICI already serves in Kerala invests their wealth through ICICI: ₹10,000 crore of new investments by April 2029.", "Stretch", "Bank", 10000, 1.0],
+ ["Families across Kerala take gold loans from ICICI at fair rates and leave high-cost lenders: ₹7,500 crore of gold loans disbursed by April 2029.", "Stretch", "Society", 10000, 0.6],
+ ["The next three Zonal Heads of Kerala are people you developed.", "Safe", "People", 10000, 0.5],
+ ["By April 2029, ICICI is the first-choice bank for Kerala's senior citizens: ₹15,000 crore in deposits and pension accounts.", "Stretch", "Bank", 10000, 0.9],
+ ["By April 2029, ICICI lends ₹10,000 crore to Kerala's MSMEs: one in every ten MSME loans in the state.", "Bold", "Bank", 10000, 1.1],
+ ["By April 2029, ICICI uses AI across Kerala to speed up loan turnaround and give branches 30% more time with customers.", "Stretch", "Bank", 10000, 0.6],
+ ["Every year, ICICI helps 10,000 families returning from the Gulf invest their savings wisely.", "Safe", "Society", 10000, 0.3],
+ ["By April 2029, ICICI trains and places 5,000 young Malayalis in banking careers through its Probationary Officers programme.", "Bold", "Society", 10000, 0.4],
+ ["By April 2029, ICICI Kerala sets the Bank's benchmark for risk: the lowest NPAs in the state, with every fraud and early-warning signal caught in real time.", "Safe", "Bank", 10000, 0.5],
+ ["By April 2029, ICICI funds 25,000 women-led enterprises through Kerala's self-help groups: ₹2,000 crore of credit.", "Stretch", "Society", 10000, 0.4],
+ ["By April 2027, every Branch Manager in your zone runs their branch as a profit centre on their own.", "Safe", "People", 10000, 0.5],
+ ["By April 2029, every RM in your zone uses AI insights to prepare for each customer conversation and offer the right next product.", "Stretch", "People", 10000, 0.5],
+ ["By April 2029, half of the Branch Managers in your zone are women.", "Bold", "People", 10000, 0.3],
+ ["By April 2029, you lead ICICI Bank's business across all of South India.", "Bold", "Self", 10000, 0.05],
+ ["By April 2029, you head one of ICICI Bank's international geographies.", "Bold", "Self", 10000, 0.05],
+ ["By April 2028, every branch in your zone becomes a branch of the future: AI-assisted, fully paperless and open on video banking 24×7.", "Stretch", "Bank", 10000, 0.5],
+ ["By April 2029, you head one of the Bank's national businesses: NRI, Wealth or Retail Assets.", "Bold", "Self", 10000, 0.05],
+ ["By April 2028, you lead Kerala and one more state together.", "Stretch", "Self", 10000, 0.05],
+ ["Next year, you get full authority over your zone's budget, hiring and branch decisions.", "Safe", "Self", 10000, 0.05],
+ ["By April 2027, every new joiner in your zone is fully productive within 90 days, guided by a buddy and a structured onboarding plan.", "Safe", "People", 10000, 0.3],
+ ["By April 2027, RM attrition in your zone halves, and every high performer stays three years or more.", "Safe", "People", 10000, 0.4],
+ ["By April 2029, ICICI finances 20,000 flood-resilient homes across Kerala's low-lying districts: ₹4,000 crore of home loans.", "Stretch", "Society", 10000, 0.4],
+ ["Every year, ICICI helps 25,000 Kerala households start their first SIP or pension plan.", "Safe", "Society", 10000, 0.3]
 ];
-const SETUP_V='2026-11-24';
+const SETUP_V='2026-11-26-32';
 function defaultConfig(){
   return {setupVersion:SETUP_V,session:'s'+Date.now(),phase:'lobby',
     lots:DEFAULT_LOTS.map((l,i)=>({id:'L'+(i+1),text:l[0],size:l[1],whom:l[2],open:l[3],impact:l[4],twist:i===8})),
     teams:['North Malabar','South Malabar','Palakkad Gateway','Thrissur Heritage','Kochi Metro','High Range','Central Travancore','Capital Region'].map((n,i)=>({id:'T'+(i+1),name:n})),
-    indBudget:100000,teamBudget:500000,inc:10000,baseShare:10,
+    indBudget:100000,teamBudget:350000,inc:10000,bigInc:25000,bigAt:100000,baseShare:10,
     current:0,lotState:'waiting',twistAnnounced:false,sold:{},revealWhom:false,debriefTab:'size'};
 }
 
@@ -361,7 +381,8 @@ function teamSpent(tid){let s=0;Object.entries(S.cfg.sold||{}).forEach(([lid,x])
 const teamLeft=tid=>S.cfg.teamBudget-teamSpent(tid);
 function teamWon(tid){return Object.entries(S.cfg.sold||{}).filter(([l,x])=>x.team===tid).map(([l])=>l)}
 const teamMembers=tid=>Object.entries(S.players).filter(([u,p])=>p.team===tid);
-function nextBidAmount(lot){const h=highBid(lot.id);return h?h.amount+S.cfg.inc:lot.open}
+function bidStep(amt){const c=S.cfg;return amt>=(c.bigAt||100000)?(c.bigInc||25000):c.inc}
+function nextBidAmount(lot){const h=highBid(lot.id);return h?h.amount+bidStep(h.amount):lot.open}
 const curLot=()=>lots()[S.cfg.current]||null;
 const base=()=>+(S.cfg.baseShare??10);
 const r1=v=>Math.round(v*10)/10;
@@ -596,7 +617,7 @@ function individualReport(uid,isMe){
   ${findingsCard('What your choices say',ins.map(([k,v])=>`<b>${k}.</b> ${v}`))}
   <div class="card" style="border-left:6px solid var(--orange)"><h3>The takeaway</h3><p style="font-size:18px;font-weight:700;margin:0">${takeaway}</p></div>
   <div class="card"><h3>1 · Height and size</h3>${spendBar(size)}<p class="muted">Your top ${TOPN} lots, first choice weighted most</p>
-  ${shareLine([{v:own,label:'Your top '+TOPN+' choices',c:'var(--maroon)'},{v:shareOf(won),label:'Your team',c:'var(--orange)'},{v:shareOf(roomLots()),label:'The room',c:'var(--bank)'},{v:maxShare(),label:'All 12 lots',c:'var(--society)'}],tg!=null?[tg]:[])}</div>
+  ${shareLine([{v:own,label:'Your top '+TOPN+' choices',c:'var(--maroon)'},{v:shareOf(won),label:'Your team',c:'var(--orange)'},{v:shareOf(roomLots()),label:'The room',c:'var(--bank)'},{v:maxShare(),label:'All '+lots().length+' lots',c:'var(--society)'}],tg!=null?[tg]:[])}</div>
   <div class="card"><h3>2 · Reach: whose aspiration did you choose?</h3>${spendBar(whom)}<div class="legend">${WHOM.map(k=>`<span><i style="background:${WCOL[k]}"></i>${k} ${pct(whom[k],tot)}%</span>`).join('')}</div></div>
   <div class="card"><h3>3 · Voice: did your priorities reach the table?</h3>
   <p>Your first choice: <b>${esc(lotById(top)?.text||'—')}</b></p>
@@ -705,7 +726,7 @@ function stage(t){if(S.bot){S.bot.stage=t;render(true)}}
 async function startBots(){
   S.confirmBots=false;const N=40,d=defaultConfig();
   S.bot={on:true,speed:1,paused:false,stage:'Setting up'};
-  const c=Object.assign({},S.cfg,{setupVersion:SETUP_V,lots:d.lots,teams:d.teams,teamBudget:d.teamBudget,inc:d.inc,baseShare:d.baseShare,leaders:{},leaderNames:{},session:'demo'+Date.now(),phase:'lobby',current:0,lotState:'waiting',twistAnnounced:false,sold:{},revealWhom:false,revealShare:false,debriefTab:'size'});
+  const c=Object.assign({},S.cfg,{setupVersion:SETUP_V,lots:d.lots,teams:d.teams,teamBudget:d.teamBudget,inc:d.inc,bigInc:d.bigInc,bigAt:d.bigAt,baseShare:d.baseShare,leaders:{},leaderNames:{},session:'demo'+Date.now(),phase:'lobby',current:0,lotState:'waiting',twistAnnounced:false,sold:{},revealWhom:false,revealShare:false,debriefTab:'size'});
   S.cfg=c;saveDoc('config/game',c);resubscribe();render(true);
   const T=c.teams.map(t=>t.id),L=c.lots;
   const bots=BOT_NAMES.slice(0,N).map((name,i)=>{const sz={Safe:rnd(.5,1.6),Stretch:rnd(.6,1.5),Bold:rnd(.3,1.4)},wh={Self:rnd(.3,1.6),People:rnd(.4,1.4),Bank:rnd(.6,1.6),Society:rnd(.3,1.3)};
@@ -737,14 +758,14 @@ async function startBots(){
     writeCfg({lotState:'open'});await sleep(1200);
     let hi=null,idle=0;
     while(S.bot){
-      const next=hi?hi.amount+S.cfg.inc:l.open;
+      const next=hi?hi.amount+bidStep(hi.amount):l.open;
       const cands=T.filter(tid=>{if(hi&&hi.team===tid)return false;const left=teamLeft(tid);if(next>left)return false;
         const tr=((S.teams[tid]||{}).rank||[]),pri=Math.max(0,tr.indexOf(l.id));const remainingWanted=tr.slice(0,6).filter(id=>!(S.cfg.sold||{})[id]).length||1;
         let cap=left/remainingWanted*(pri<2?1.9:pri<4?1.3:pri<6?0.8:0.25)*agg[tid];
         if(l.twist&&hi&&lotBids(l.id).some(b=>b.teamId===tid))cap=Math.max(cap,Math.min(left*.55,hi.amount*1.6));
         return next<=cap});
       if(cands.length&&Math.random()<0.88){
-        const tid=pick(cands);const jump=Math.random()<0.12?S.cfg.inc:0;const amt=next+jump;
+        const tid=pick(cands);const jump=Math.random()<0.12?bidStep(next):0;const amt=next+jump;
         hi={team:tid,amount:amt};idle=0;
         try{await S.db.collection('bids').add({session:c.session,lotId:l.id,teamId:tid,amount:amt,uid:S.uid,host:true,bot:true,t:Date.now()})}catch(e){}
         if(S.cfg.lotState!=='open')writeCfg({lotState:'open'});
@@ -790,14 +811,14 @@ function hostLobby(){
   const n=Object.keys(S.players).length;
   return `<div class="grid2"><div class="card center"><h2>Scan to join the auction</h2><div id="qr" style="display:inline-block;padding:12px;background:#fff;border-radius:12px"></div>
   <p style="font-weight:800;word-break:break-all">${esc(joinUrl())}</p><div class="big">${n}</div><div class="muted">people joined</div></div>
-  <div class="card ctl"><h2>Facilitator setup</h2>${S.cfg.setupVersion!==SETUP_V?`<div class="note" style="border-left:5px solid var(--orange);margin-bottom:12px"><b>A newer setup is ready.</b> This game still uses older lots or groups. Load the final 12 lots, the 8 zone teams and the ₹5,00,000 kitty.<div style="margin-top:8px"><button class="btn" onclick="loadLatestSetup()">Load the latest lots and zone teams</button></div></div>`:''}<p class="muted">Edit lots, groups and budgets before you start.</p>
+  <div class="card ctl"><h2>Facilitator setup</h2>${S.cfg.setupVersion!==SETUP_V?`<div class="note" style="border-left:5px solid var(--orange);margin-bottom:12px"><b>A newer setup is ready.</b> This game still uses older lots or groups. Load the final 32 lots, the 8 zone teams and the ₹3,50,000 kitty.<div style="margin-top:8px"><button class="btn" onclick="loadLatestSetup()">Load the latest lots and zone teams</button></div></div>`:''}<p class="muted">Edit lots, groups and budgets before you start.</p>
   <div class="note" style="margin-bottom:10px"><b>Watch a demo.</b> 40 bots join, fill their sheets, bid in 8 zone teams and reach the reports, while you watch.${S.confirmBots?`<div style="margin-top:8px">This starts a separate demo game and clears the current one. <div class="row" style="margin-top:6px"><button class="btn sm dark" onclick="startBots()">Yes, start the demo</button><button class="btn sm sec" onclick="S.confirmBots=false;render(true)">Cancel</button></div></div>`:`<div style="margin-top:8px"><button class="btn sm" onclick="S.confirmBots=true;render(true)">Watch 40 bots play</button></div>`}</div><button class="btn" onclick="S.editLots=JSON.parse(JSON.stringify(S.cfg));render(true)">Edit lots, groups and budgets</button>
   <button class="btn sec" style="margin-top:8px" onclick="S.confirmReset=true;render(true)">Start a fresh game</button>
   ${S.confirmReset?`<div class="note" style="margin-top:10px">A fresh game clears every sheet, plan and bid, and keeps your lots and groups. <div class="row" style="margin-top:8px"><button class="btn sm dark" onclick="resetGame()">Yes, start fresh</button><button class="btn sm sec" onclick="S.confirmReset=false;render(true)">Keep this game</button></div></div>`:''}</div></div>
   ${S.editLots?setupEditor():''}
   ${teamsBoard(t=>(teamMembers(t.id).map(([u,p])=>`<div class="member"><span>${esc(p.name)}${leaderOf(t.id)===u?' ★ Leader':''}</span></div>`).join('')||'<p class="muted">Waiting for members</p>')+(teamMembers(t.id).length?leaderPicker(t):''))}`;
 }
-function loadLatestSetup(){const d=defaultConfig();writeCfg({setupVersion:SETUP_V,lots:d.lots,teams:d.teams,teamBudget:d.teamBudget,inc:d.inc,baseShare:d.baseShare,leaders:{},leaderNames:{},sold:{},current:0,lotState:'waiting',twistAnnounced:false});toast('Latest lots and zone teams loaded')}
+function loadLatestSetup(){const d=defaultConfig();writeCfg({setupVersion:SETUP_V,lots:d.lots,teams:d.teams,teamBudget:d.teamBudget,inc:d.inc,bigInc:d.bigInc,bigAt:d.bigAt,baseShare:d.baseShare,leaders:{},leaderNames:{},sold:{},current:0,lotState:'waiting',twistAnnounced:false});toast('Latest lots and zone teams loaded')}
 function resetGame(){S.confirmReset=false;const c=Object.assign({},S.cfg,{session:'s'+Date.now(),phase:'lobby',current:0,lotState:'waiting',twistAnnounced:false,sold:{},revealWhom:false,revealShare:false,debriefTab:'size'});S.cfg=c;saveDoc('config/game',c);resubscribe();render(true);toast('Fresh game ready')}
 function setupEditor(){
   const e=S.editLots;
@@ -817,7 +838,7 @@ function setupEditor(){
   <div class="field"><label>Group kitty (₹)</label><input type="number" step="10000" value="${e.teamBudget}" oninput="S.editLots.teamBudget=+this.value||0"></div>
   <div class="field"><label>Bid step (₹)</label><input type="number" step="1000" value="${e.inc}" oninput="S.editLots.inc=Math.max(1000,+this.value||0)"></div>
   <div class="field"><label>Starting profit market share (%)</label><input type="number" step="0.5" value="${e.baseShare??10}" oninput="S.editLots.baseShare=Math.max(0,+this.value||0)"></div></div>
-  <div class="row"><button class="btn" onclick="saveSetup()">Save setup</button><button class="btn sec" onclick="S.editLots=null;render(true)">Close</button><button class="btn ghost" onclick="S.editLots.lots=defaultConfig().lots;render(true)">Restore the 12 default lots</button></div></div>`;
+  <div class="row"><button class="btn" onclick="saveSetup()">Save setup</button><button class="btn sec" onclick="S.editLots=null;render(true)">Close</button><button class="btn ghost" onclick="S.editLots.lots=defaultConfig().lots;render(true)">Restore the default lots</button></div></div>`;
 }
 function mvLot(i,d){const a=S.editLots.lots,j=i+d;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];render(true)}
 function saveSetup(){const e=S.editLots;if(!e.lots.length)return toast('Add at least one lot');if(!e.teams.length)return toast('Add at least one group');e.lots.forEach(l=>l.text=l.text.trim()||'Untitled lot');writeCfg({lots:e.lots,teams:e.teams,indBudget:e.indBudget,teamBudget:e.teamBudget,inc:e.inc,baseShare:e.baseShare??10});S.editLots=null;render(true);toast('Setup saved')}
@@ -913,7 +934,7 @@ function hostDebrief(){
     <div class="stage"><div class="amb" style="font-size:34px">"Twenty years from now, which of today's purchases will appear in your branch heads' story?"</div></div>`
     :`<div class="stage"><div class="amb">These twelve aspirations had four owners.</div><button class="btn ctl" onclick="writeCfg({revealWhom:true})">Reveal the Spend Map</button></div>`}
   if(tab==='share'){const tg=Object.values(S.players).map(p=>p.target).filter(hasT);const avg=tg.length?r1(tg.reduce((a,b)=>a+b,0)/tg.length):0;
-    body=c.revealShare?`<div class="card"><h2>Your numbers, and where your choices lead</h2>${shareLine([{v:shareOf(roomLots()),label:'What this room bought',c:'var(--orange)'},{v:avg,label:'Average target',c:'var(--maroon)'},{v:maxShare(),label:'All 12 lots',c:'var(--society)'}],tg)}</div>
+    body=c.revealShare?`<div class="card"><h2>Your numbers, and where your choices lead</h2>${shareLine([{v:shareOf(roomLots()),label:'What this room bought',c:'var(--orange)'},{v:avg,label:'Average target',c:'var(--maroon)'},{v:maxShare(),label:'All '+lots().length+' lots',c:'var(--society)'}],tg)}</div>
     <div class="grid2"><div class="card"><h3>Where the growth was</h3>${impactTable()}</div><div class="card"><h3>By group</h3>${c.teams.filter(t=>teamMembers(t.id).length||teamWon(t.id).length).map(t=>`<div class="member"><span>${esc(t.name)}</span><b>${shareOf(teamWon(t.id))}%</b></div>`).join('')}</div></div>
     <div class="note">Ask: "You wrote ${avg}%. The lots you bought take Kerala to ${shareOf(roomLots())}%. Which lots carried the growth, and which did we chase?"</div>`
     :`<div class="stage"><div class="amb">Every lot carried a hidden market share impact.</div><button class="btn ctl" onclick="writeCfg({revealShare:true})">Reveal where Kerala would be</button></div>`}
@@ -952,7 +973,7 @@ function reportSlides(){
    `<div class="kick">Movement 4</div><h1>The Spend Map</h1><p class="lead">These aspirations had four owners: self, people, the bank and society.</p>
     <h3>Group purchases</h3>${spendBar(bought)}<h3 style="margin-top:14px">Private sheets</h3>${spendBar(priv)}${legend}${rival?`<p class="note" style="margin-top:14px">Spent on rivalry (runner-up payments): <b>${fmt(rival)}</b></p>`:''}`,
    `<div class="kick">Movement 5</div><h1>Where is Kerala now?</h1><p class="lead">We started at ${base()}%. Every lot carried a hidden market share impact.</p>
-    ${(()=>{const tg=ps.map(p=>p.target).filter(hasT);const avg=tg.length?r1(tg.reduce((a,b)=>a+b,0)/tg.length):0;return shareLine([{v:shareOf(roomLots()),label:'What this room bought',c:'var(--orange)'},{v:avg,label:'Average target',c:'var(--maroon)'},{v:maxShare(),label:'All 12 lots',c:'var(--society)'}],tg)})()}${impactTable()}`,
+    ${(()=>{const tg=ps.map(p=>p.target).filter(hasT);const avg=tg.length?r1(tg.reduce((a,b)=>a+b,0)/tg.length):0;return shareLine([{v:shareOf(roomLots()),label:'What this room bought',c:'var(--orange)'},{v:avg,label:'Average target',c:'var(--maroon)'},{v:maxShare(),label:'All '+lots().length+' lots',c:'var(--society)'}],tg)})()}${impactTable()}`,
    `<div class="kick">Results by group</div><h1>What each group bought</h1>
     <table><tr><th>Group</th><th>Lots won</th><th>Spent</th><th>Market share</th><th>For self</th></tr>${c.teams.filter(t=>teamMembers(t.id).length||teamWon(t.id).length).map(t=>{const won=teamWon(t.id),b=breakdown(teamBought(t.id),'whom'),tot=sumObj(b);return `<tr><td><b>${esc(t.name)}</b></td><td>${won.map(l=>esc(lotById(l)?.text||'')).join('<br>')||'—'}</td><td>${fmt(teamSpent(t.id))}</td><td><b>${shareOf(won)}%</b></td><td>${pct(b.Self,tot)}%</td></tr>`}).join('')}</table>`,
    `<div class="kick">Commitments</div><h1>The Aspirations We Carry</h1><div class="wall" style="margin-top:12px">${cm.map(p=>`<div class="cmt">"${esc(p.commitment)}"<div class="muted" style="margin-top:6px">— ${esc(p.name)}</div></div>`).join('')||'<p class="muted">Commitments appear here as leaders save them on their phones.</p>'}</div>`,
